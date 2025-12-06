@@ -3,7 +3,11 @@
 import React from "react";
 import Navbar from "../components/navbar";
 
-export default function MainLayout({ children }) {
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col">
       {/* Navbar for every page */}
