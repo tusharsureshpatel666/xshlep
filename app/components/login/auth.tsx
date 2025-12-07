@@ -4,10 +4,10 @@ import LoginForm from "./LoginForm";
 
 export default function Page() {
   return (
-    <div className="min-h-screen ">
+    <div className="">
       <Navbar />
 
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
+      <div className="flex flex-col lg:flex-row h-[calc(99vh-80px)]">
         {/* LEFT SIDE: LOGIN FORM */}
         <div className="flex  justify-center items-center w-full lg:w-1/2 px-6">
           <LoginForm />

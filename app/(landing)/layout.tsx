@@ -2,6 +2,7 @@
 
 import React from "react";
 import Navbar from "../components/navbar";
+import Link from "next/link";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -23,21 +24,24 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <div className="max-w-6xl mx-auto px-4 flex justify-between text-sm text-gray-500 dark:text-gray-400">
           <p>© 2025 Xsklep — All Rights Reserved</p>
           <div className="flex gap-4">
-            <a
-              href="/privacy"
+            <Link
+              href="/common/privacy"
               className="hover:text-black dark:hover:text-white"
             >
               Privacy Policy
-            </a>
-            <a href="/terms" className="hover:text-black dark:hover:text-white">
+            </Link>
+            <Link
+              href="/common/terms"
+              className="hover:text-black dark:hover:text-white"
+            >
               Terms
-            </a>
-            <a
-              href="/contact"
+            </Link>
+            <Link
+              href="/common/contact"
               className="hover:text-black dark:hover:text-white"
             >
               Contact
-            </a>
+            </Link>
           </div>
         </div>
       </footer>

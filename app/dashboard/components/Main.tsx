@@ -1,7 +1,12 @@
 import React from "react";
+import FormSetup from "./formsetup/FormSetup";
 
 const Main = () => {
-  return <div>Main</div>;
+  return (
+    <div>
+      <FormSetup />
+    </div>
+  );
 };
 
 export default Main;

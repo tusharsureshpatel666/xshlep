@@ -97,15 +97,19 @@ const Navbar = () => {
               ))}
 
               <div className="flex flex-col gap-3 mt-2">
-                <Button
-                  variant="outline"
-                  className="rounded-full cursor-pointer dark:text-white text-black w-full"
-                >
-                  Login
-                </Button>
-                <Button className="rounded-full cursor-pointer w-full">
-                  Get Xsklep Free
-                </Button>
+                <Link href={"/dashboard"}>
+                  <Button
+                    variant="outline"
+                    className="rounded-full cursor-pointer dark:text-white text-black w-full"
+                  >
+                    Login
+                  </Button>
+                </Link>
+                <Link href={"/dashboard"}>
+                  <Button className="rounded-full cursor-pointer w-full">
+                    Get Xsklep Free
+                  </Button>
+                </Link>
               </div>
             </div>
           </motion.div>
