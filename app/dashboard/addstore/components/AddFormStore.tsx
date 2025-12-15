@@ -233,10 +233,7 @@ const AddFormStore = () => {
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent
-                align="start"
-                className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
-              >
+              <DropdownMenuContent align="start">
                 <DropdownMenuItem
                   onClick={() => setCountry("India")}
                   className="flex items-center w-full gap-2 cursor-pointer"
@@ -503,7 +500,9 @@ const AddFormStore = () => {
                   <input
                     type="file"
                     accept="image/*"
-                    ref={(el) => (imageInputRefs.current[index] = el)}
+                    ref={(el) => {
+                      imageInputRefs.current[index] = el;
+                    }}
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
