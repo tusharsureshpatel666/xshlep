@@ -8,16 +8,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [Google, Facebook, Discord],
 
   callbacks: {
+    // 1️⃣ Sign in user + ensure user exists in DB
     async signIn({ user }) {
-      if (!user.email) {
-        return false;
-      }
-      const existingUser = await prisma.user.findUnique({
+      if (!user.email) return false;
+
+      let dbUser = await prisma.user.findUnique({
         where: { email: user.email },
       });
 
-      if (!existingUser) {
-        await prisma.user.create({
+      if (!dbUser) {
+        dbUser = await prisma.user.create({
           data: {
             email: user.email,
             name: user.name ?? "",
@@ -25,7 +25,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
         });
       }
+
+      // Inject DB user ID into the `user` object
+      user.id = dbUser.id;
       return true;
+    },
+
+    // 2️⃣ Add user ID into the JWT token
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id; // attach db id to token
+      }
+      return token;
+    },
+
+    // 3️⃣ Add user ID into the session object (available on server route)
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id; // expose it
+      }
+      return session;
     },
   },
 });

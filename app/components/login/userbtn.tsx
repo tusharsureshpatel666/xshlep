@@ -48,7 +48,7 @@ const Userbtn = () => {
         </Link>
 
         {/* Store */}
-        <Link href="/your-store">
+        <Link href="/dashboard/yourstore">
           <DropdownMenuItem className="cursor-pointer flex items-center gap-2 hover:bg-accent hover:text-accent-foreground">
             <Store className="w-5 h-5" />
             Store

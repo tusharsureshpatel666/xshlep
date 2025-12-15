@@ -27,8 +27,8 @@ const FormSetup = () => {
   ];
 
   const handleAction = () => {
-    if (renter === "find") router.push("/find-store");
-    if (renter === "add") router.push("/add-store");
+    if (renter === "find") router.push("/dashboard/findstore");
+    if (renter === "add") router.push("/dashboard/addstore");
   };
 
   return (
@@ -54,8 +54,8 @@ const FormSetup = () => {
             className={`p-8 rounded-3xl border cursor-pointer transition-all
               ${
                 renter === item.id
-                  ? "border-black dark:border-white bg-gray-100 dark:bg-slate-900 shadow-md"
-                  : "border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-900 shadow-sm"
+                  ? "border-black dark:border-white bg-gray-100 dark:bg-black shadow-md"
+                  : "border-gray-300 dark:border-gray-700 bg-white dark:bg-black shadow-sm"
               }
             `}
           >
@@ -65,7 +65,7 @@ const FormSetup = () => {
                 ${
                   renter === item.id
                     ? "bg-black text-white dark:bg-white dark:text-black"
-                    : "bg-gray-100 dark:bg-gray-800"
+                    : "bg-gray-100 dark:bg-gray-900"
                 }`}
               >
                 {item.icon}
@@ -94,7 +94,7 @@ const FormSetup = () => {
         >
           <Button
             onClick={handleAction}
-            className="rounded-full cursor-pointer w-full px-8 py-6 text-lg font-semibold shadow-md hover:shadow-lg transition-all"
+            className="rounded-lg cursor-pointer w-full px-8 py-6 text-sm font-semibold shadow-md hover:shadow-lg transition-all"
           >
             {renter === "find" ? "Find Stores" : "Add Store"}
           </Button>

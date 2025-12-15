@@ -13,6 +13,8 @@ datasource db {
   provider = "postgresql"
 }
 
+
+
 model User {
   id String @id @default(uuid())
   name String ?
@@ -21,4 +23,35 @@ model User {
   createdAt DateTime @default(now())
   onboardingComplete Boolean @default(false)
   referralSource String?
+  stores Store[] @relation("OwerStores")
+}
+
+model Store {
+  id String @id @default(uuid())
+  ownerId String
+  owner User @relation("OwerStores", fields: [ownerId], references: [id])
+  title String
+  desc    String   
+  country        String
+  state          String
+  city           String
+  pin            String
+  fullAddress    String
+  priceInr       Int
+  businessType   String
+  bannerImageUrl String?      // store uploaded file URL / path
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  images         StoreImage[] 
+   latitude  Float?
+  longitude Float?
+}
+
+model StoreImage {
+  id        String   @id @default(cuid())
+  store     Store    @relation(fields: [storeId], references: [id])
+  storeId   String
+  url       String
+  order     Int      @default(0) // order index (0..4)
+  createdAt DateTime @default(now())
 }

@@ -25,7 +25,7 @@ const DashNav = () => {
 
       <div className="flex gap-3">
         {/* Button 1 — Find Store Partner */}
-        <Link href="/dashboard">
+        <Link href="/dashboard/findstore">
           <Button
             variant="outline"
             className="rounded-md lg:rounded-full  cursor-pointer dark:text-white text-black flex items-center gap-2"
@@ -37,7 +37,7 @@ const DashNav = () => {
         </Link>
 
         {/* Button 2 — Share Your Store */}
-        <Link href="/share-store">
+        <Link href="/dashboard/addstore">
           <Button className="rounded-md lg:rounded-full cursor-pointer font-semibold flex items-center gap-2">
             <Store className="w-5 h-5" />
             {/* label hidden on small & medium screens */}
