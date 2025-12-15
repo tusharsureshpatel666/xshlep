@@ -17,6 +17,7 @@ import Link from "next/link";
 
 const AddFormStore = () => {
   const [sStep, setSstep] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   // Form fields
   const [title, setTitle] = useState("");
@@ -69,6 +70,7 @@ const AddFormStore = () => {
   };
 
   const handleFinish = async () => {
+    setLoading(true);
     const formData = new FormData();
 
     formData.append("title", title);
@@ -99,6 +101,7 @@ const AddFormStore = () => {
     } catch (err) {
       console.error(err);
     }
+    setLoading(false);
   };
 
   return (
@@ -604,8 +607,10 @@ const AddFormStore = () => {
           >
             {sStep === 6 ? (
               // ✅ FINISH BUTTON
+
               <Button
                 size="lg"
+                disabled={loading}
                 onClick={handleFinish} // <-- your new function
                 className="rounded-md py-6 cursor-pointer text-base"
               >
