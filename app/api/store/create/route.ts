@@ -2,6 +2,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import { NextResponse } from "next/server";
 import { auth } from "../../../../lib/auth";
 import prisma from "@/lib/prisma";
+import type { UploadApiResponse } from "cloudinary";
 
 export async function POST(req: Request) {
   try {
@@ -52,13 +53,14 @@ export async function POST(req: Request) {
     let bannerUrl: string | null = null;
 
     if (bannerImage) {
-      const uploaded = await uploadToCloudinary(bannerImage);
+      const uploaded: UploadApiResponse = await uploadToCloudinary(bannerImage);
       bannerUrl = uploaded.secure_url;
     }
 
     const imageUrls: string[] = [];
+
     for (const file of otherImages) {
-      const uploaded: any = await uploadToCloudinary(file);
+      const uploaded: UploadApiResponse = await uploadToCloudinary(file);
       imageUrls.push(uploaded.secure_url);
     }
 
