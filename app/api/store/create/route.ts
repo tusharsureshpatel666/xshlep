@@ -40,8 +40,9 @@ export async function POST(req: Request) {
     }
 
     const ownerId = session?.user?.id;
-    console.log(ownerId);
-    console.log(formData);
+    if (!ownerId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const bannerImage = formData.get("bannerImage") as File | null;
 
