@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { GeminCalling } from "@/lib/googlegemini";
+import { Prisma } from "@/lib/generated/prisma";
 
 export async function POST(req: Request) {
   try {
@@ -25,10 +26,15 @@ export async function POST(req: Request) {
     }
 
     // Split Gemini suggestions into keywords for flexible matching
-    const orConditions = compatibleTypes.flatMap((type) =>
-      type.split(" ").map((keyword) => ({
-        businessType: { contains: keyword, mode: "insensitive" },
-      }))
+
+    const orConditions: Prisma.StoreWhereInput[] = compatibleTypes.flatMap(
+      (type) =>
+        type.split(" ").map((keyword) => ({
+          businessType: {
+            contains: keyword,
+            mode: Prisma.QueryMode.insensitive,
+          },
+        }))
     );
 
     const stores = await prisma.store.findMany({
