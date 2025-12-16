@@ -47,8 +47,8 @@ const Findstore = () => {
     }
   };
 
-  const [min, setMin] = useState();
-  const [max, setMax] = useState();
+  const [min, setMin] = useState<string>("");
+  const [max, setMax] = useState<string>("");
 
   const handleNext = () => {
     // if (!isStepValid) {
@@ -74,9 +74,9 @@ const Findstore = () => {
     <div className="flex flex-col w-full max-w-7xl mx-auto gap-6 mt-4 pb-28">
       {/* STEP 0 */}
       {sStep === 0 && (
-        <>
-          <div className="flex justify-center">
-            <Image src="/search.svg" width={500} height={500} alt="hello" />
+        <div className="flex flex-col gap-6 items-center text-center">
+          <div className="flex justify-center w-full items-center text-center">
+            <Image src="/search1.svg" width={500} height={500} alt="hello" />
           </div>
 
           <Heading
@@ -86,11 +86,11 @@ const Findstore = () => {
 
           <Button
             onClick={() => setSstep(1)}
-            className="rounded-lg cursor-pointer w-full py-6 text-sm"
+            className="rounded-xl cursor-pointer  py-6 text-sm"
           >
             Search Now
           </Button>
-        </>
+        </div>
       )}
       {sStep == 1 && (
         <div className="w-full space-y-4">
@@ -344,7 +344,7 @@ const Findstore = () => {
             size="lg"
             onClick={() => setSstep(sStep - 1)}
             disabled={sStep === 1}
-            className="rounded-md py-6 cursor-pointer text-base"
+            className="rounded-xl py-6 cursor-pointer text-base"
           >
             Prev
           </Button>
@@ -360,7 +360,7 @@ const Findstore = () => {
                 disabled={loading}
                 size="lg"
                 onClick={handleFinish} // <-- your new function
-                className="rounded-md py-6 cursor-pointer text-base"
+                className="rounded-xl py-6 cursor-pointer text-base"
               >
                 Finish
               </Button>
@@ -370,7 +370,7 @@ const Findstore = () => {
                 size="lg"
                 onClick={handleNext}
                 disabled={!isStepValid}
-                className={`rounded-md py-6 cursor-pointer text-base 
+                className={`rounded-xl py-6 cursor-pointer text-base 
             ${!isStepValid ? "opacity-60 cursor-not-allowed" : ""}
           `}
               >
