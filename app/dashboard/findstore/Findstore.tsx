@@ -76,7 +76,7 @@ const Findstore = () => {
       {sStep === 0 && (
         <>
           <div className="flex justify-center">
-            <Image src="/search.svg" width={300} height={300} alt="hello" />
+            <Image src="/search.svg" width={500} height={500} alt="hello" />
           </div>
 
           <Heading

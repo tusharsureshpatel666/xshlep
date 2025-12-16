@@ -40,7 +40,7 @@ const Userbtn = () => {
         <DropdownMenuSeparator />
 
         {/* Profile */}
-        <Link href="/profile">
+        <Link href="/dashboard/profile">
           <DropdownMenuItem className="cursor-pointer flex items-center gap-2 hover:bg-accent hover:text-accent-foreground">
             <User className="w-5 h-5" />
             Profile

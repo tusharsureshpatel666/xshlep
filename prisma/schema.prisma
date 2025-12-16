@@ -23,6 +23,7 @@ model User {
   createdAt DateTime @default(now())
   onboardingComplete Boolean @default(false)
   referralSource String?
+  phoneNumber Int @unique
   stores Store[] @relation("OwerStores")
 }
 

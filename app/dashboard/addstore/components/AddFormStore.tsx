@@ -110,44 +110,32 @@ const AddFormStore = () => {
       {sStep === 0 && (
         <div className="flex flex-col gap-8 animate-fadeIn">
           {/* Illustration */}
-          <div className="flex justify-center w-full">
-            <video
-              width={150}
-              height={320}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="drop-shadow-lg rounded-2xl"
-            >
-              <source src="/fix.webm" type="video/webm" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
+          <div className="flex justify-center w-full flex-col text-center items-center gap-5">
+            <Image src={"/qu1.svg"} width={500} height={500} alt="hello" />
+            {/* Heading */}
+            <Heading
+              title="List Your Store for Rent"
+              description="List your store and connect with reliable partners to split the rent effortlessly."
+            />
 
-          {/* Heading */}
-          <Heading
-            title="List Your Store & Unlock New Opportunities 🚀"
-            description="Turn your unused space into income — list your store and connect with reliable partners to split the rent effortlessly."
-          />
+            {/* Actions */}
+            <div className="flex gap-3">
+              <Link href="/dashboard" className="w-full">
+                <Button
+                  variant="outline"
+                  className="cursor-pointer rounded-xl py-6 text-sm font-medium hover:scale-[1.02] transition"
+                >
+                  ← Back to Dashboard
+                </Button>
+              </Link>
 
-          {/* Actions */}
-          <div className="flex gap-3">
-            <Link href="/dashboard" className="w-full">
               <Button
-                variant="outline"
-                className="cursor-pointer rounded-xl py-6 text-sm font-medium hover:scale-[1.02] transition"
+                onClick={() => setSstep(1)}
+                className="rounded-xl cursor-pointer py-6 text-sm font-medium hover:scale-[1.02] transition"
               >
-                ← Back to Dashboard
+                Start Now
               </Button>
-            </Link>
-
-            <Button
-              onClick={() => setSstep(1)}
-              className="rounded-xl cursor-pointer py-6 text-sm font-medium hover:scale-[1.02] transition"
-            >
-              Start Now
-            </Button>
+            </div>
           </div>
         </div>
       )}
@@ -209,43 +197,48 @@ const AddFormStore = () => {
           />
 
           {/* Country Dropdown using Shadcn */}
-          <div className="flex flex-col gap-2">
+          <div className="flex w-full flex-col gap-2">
             <Label className="text-md font-semibold dark:text-gray-200">
               Country
             </Label>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="
-              w-full justify-between 
-              px-4 py-6 
-              rounded-lg border
-              border-gray-400 dark:border-gray-600
-              dark:text-white bg-white dark:bg-black
-            "
-                >
-                  {country ? (
-                    <span className="flex items-center gap-2">
-                      🇮🇳 {country}
-                    </span>
-                  ) : (
-                    "Select Country"
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
+            {/* IMPORTANT WRAPPER */}
+            <div className="w-full">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  {/* IMPORTANT: wrapper div */}
+                  <div className="w-full">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between px-4 py-6 rounded-lg border border-gray-400 dark:border-gray-600 dark:text-white bg-white dark:bg-black"
+                    >
+                      {country ? (
+                        <span className="flex items-center gap-2">
+                          🇮🇳 {country}
+                        </span>
+                      ) : (
+                        "Select Country"
+                      )}
+                    </Button>
+                  </div>
+                </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem
-                  onClick={() => setCountry("India")}
-                  className="flex items-center w-full gap-2 cursor-pointer"
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={4}
+                  className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
                 >
-                  🇮🇳 India
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuItem
+                    onClick={() => setCountry("India")}
+                    className="flex w-full items-center gap-2 px-4 py-3 cursor-pointer"
+                  >
+                    India
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
+
           <div className="flex flex-col gap-2">
             <Label className="text-md font-semibold dark:text-gray-200">
               State
@@ -375,6 +368,7 @@ const AddFormStore = () => {
               Pin
             </Label>
             <input
+              type="number"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
               placeholder="Pin eg : (110041)"
@@ -553,13 +547,7 @@ const AddFormStore = () => {
         <div className="text-center space-y-6 flex flex-col items-center justify-center">
           {/* Large Responsive Image */}
           <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center">
-            <Image
-              src="/done.svg"
-              width={160}
-              height={160}
-              alt="Success"
-              className="w-full h-full object-contain"
-            />
+            <Image src={"/done.svg"} width={500} height={500} alt="hello" />
           </div>
 
           <Heading
@@ -595,7 +583,7 @@ const AddFormStore = () => {
             size="lg"
             onClick={() => setSstep(sStep - 1)}
             disabled={sStep === 1}
-            className="rounded-md py-6 cursor-pointer text-base"
+            className="rounded-xl py-6 cursor-pointer text-base"
           >
             Prev
           </Button>
@@ -612,7 +600,7 @@ const AddFormStore = () => {
                 size="lg"
                 disabled={loading}
                 onClick={handleFinish} // <-- your new function
-                className="rounded-md py-6 cursor-pointer text-base"
+                className="rounded-xl py-6 cursor-pointer text-base"
               >
                 Finish
               </Button>
@@ -622,7 +610,7 @@ const AddFormStore = () => {
                 size="lg"
                 onClick={handleNext}
                 disabled={!isStepValid}
-                className={`rounded-md py-6 cursor-pointer text-base 
+                className={`rounded-xl py-6 cursor-pointer text-base 
             ${!isStepValid ? "opacity-60 cursor-not-allowed" : ""}
           `}
               >

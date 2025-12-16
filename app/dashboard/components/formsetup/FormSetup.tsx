@@ -90,11 +90,11 @@ const FormSetup = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="mt-6"
+          className="mt-6 flex justify-center items-center"
         >
           <Button
             onClick={handleAction}
-            className="rounded-lg cursor-pointer w-full px-8 py-6 text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+            className="rounded-xl cursor-pointer   py-6 text-sm font-semibold shadow-md hover:shadow-lg transition-all"
           >
             {renter === "find" ? "Find Stores" : "Add Store"}
           </Button>

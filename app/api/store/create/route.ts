@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     }
 
     const ownerId = session?.user?.id;
-    if (!ownerId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

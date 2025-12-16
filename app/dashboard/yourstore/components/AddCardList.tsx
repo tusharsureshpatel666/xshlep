@@ -2,6 +2,10 @@
 import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import Heading from "../../components/heading";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Loader } from "lucide-react";
 
 const AddCardList = () => {
   const [stores, setStores] = useState([]);
@@ -26,9 +30,26 @@ const AddCardList = () => {
     fetchStores();
   }, []);
 
-  if (loading) return <p>Loading stores...</p>;
+  if (loading)
+    return (
+      <div className="flex flex-col justify-center text-center items-center gap-3">
+        <Loader className="w-5 h-5 animate-spin" />
+      </div>
+    );
 
-  if (!stores.length) return <p>No stores found</p>;
+  if (!stores.length)
+    return (
+      <div className="flex flex-col justify-center text-center items-center gap-3">
+        <Image src={"/not.svg"} width={500} height={500} alt="hello" />
+        <Heading
+          title="No Store Found"
+          description="No store found click to create one"
+        />
+        <Link href="/dashboard/addstore">
+          <Button className="py-6 rounded-xl ">Create Store</Button>
+        </Link>
+      </div>
+    );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

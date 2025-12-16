@@ -42,7 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // 3️⃣ Add user ID into the session object (available on server route)
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id; // expose it
+        session.user.id = token.id as string; // expose it
       }
       return session;
     },
