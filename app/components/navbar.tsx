@@ -25,7 +25,7 @@ const Navbar = () => {
         <Link href={"/"} className="flex items-center gap-2">
           <Image src="/logo.svg" width={40} height={40} alt="logo" />
           <h2 className="text-xl font-semibold dark:text-white text-black">
-            Xsklep
+            2k1s
           </h2>
         </Link>
 
@@ -54,7 +54,7 @@ const Navbar = () => {
           </Link>
           <Link href={"/dashboard"}>
             <Button className="rounded-full cursor-pointer font-semibold">
-              Get Xsklep Free
+              Get Start Free
             </Button>
           </Link>
         </div>
@@ -107,7 +107,7 @@ const Navbar = () => {
                 </Link>
                 <Link href={"/dashboard"}>
                   <Button className="rounded-full cursor-pointer w-full">
-                    Get Xsklep Free
+                    Get 2k1s Free
                   </Button>
                 </Link>
               </div>

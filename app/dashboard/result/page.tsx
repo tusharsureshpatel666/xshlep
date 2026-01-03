@@ -2,12 +2,14 @@
 
 import { useStoreSearch } from "@/store/store";
 import Image from "next/image";
+import Link from "next/link";
 
 const ResultPage = () => {
   const stores = useStoreSearch((state) => state.stores);
 
+  console.log(stores.length);
   return (
-    <div className="grid gap-6">
+    <Link href={`/dashboard/store`} className="grid gap-6">
       {stores.map((store) => (
         <div key={store.id} className="p-4 border rounded-lg">
           {/* Banner Image */}
@@ -47,7 +49,7 @@ const ResultPage = () => {
           <p className="font-semibold mt-1">₹{store.businessType}</p>
         </div>
       ))}
-    </div>
+    </Link>
   );
 };
 

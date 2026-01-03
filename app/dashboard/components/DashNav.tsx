@@ -19,7 +19,7 @@ const DashNav = () => {
       <Link href="/" className="flex items-center gap-2">
         <Image src="/logo.svg" width={40} height={40} alt="logo" />
         <h2 className="text-xl font-semibold dark:text-white text-black">
-          Xsklep
+          2k1s
         </h2>
       </Link>
 

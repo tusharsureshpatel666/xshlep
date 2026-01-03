@@ -1,23 +1,33 @@
 "use client";
-import { Button } from "@/components/ui/button";
+
 import Image from "next/image";
-import React, { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Heading from "../../components/heading";
-import { Label } from "@/components/ui/label";
-import { motion } from "framer-motion";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 
 import axios from "axios";
-import Link from "next/link";
+
+import { useRouter } from "next/navigation";
+
+import { useParticStore, useStoreStep } from "@/store/store";
+
+import StepIntro from "./form-steps/StepIntro";
+import StepTitle from "./form-steps/StepTitle";
+import FormNavigation from "./form-steps/Navitgate";
+import StepTypeStore from "./form-steps/StepTypeStore";
+import LocationPicker from "./form-steps/stepMap";
+import { isValidDelhiPin } from "@/type/pinvalidation";
+import StepImage from "./form-steps/StepImage";
+import StepPartic from "./form-steps/StepPartic";
+import StoreMethodtype from "./form-steps/StoreMethodtype";
+import TrueVideo from "./form-steps/trueVideo";
+import PriceInput from "./form-steps/stepprice";
+import StepDesc from "./form-steps/StepDesc";
+import PeopleDesc from "./form-steps/PeopleDesc";
 
 const AddFormStore = () => {
-  const [sStep, setSstep] = useState(0);
+  const { sStep, setSStep, nextSStep, prevStep, resetStep } = useStoreStep();
   const [loading, setLoading] = useState(false);
+  const [storeType, setStoreType] = useState("");
 
   // Form fields
   const [title, setTitle] = useState("");
@@ -27,38 +37,74 @@ const AddFormStore = () => {
   const [state, Sstate] = useState("");
   const [pin, setPin] = useState("");
   const [fullAdd, setFullAdd] = useState("");
-  const [price, setPrice] = useState("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [price, setPrice] = useState<string>("2000");
   const [bannerImage, setBannerImage] = useState<File | null>(null);
   const [otherImages, setOtherImages] = useState<(File | null)[]>([
     null,
     null,
     null,
     null,
-    null,
   ]);
 
-  const bannerInputRef = useRef<HTMLInputElement | null>(null);
-  const imageInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  useEffect(() => {
+    resetStep(); // 👈 resets step when route is opened
+  }, [resetStep]);
+  const [peopleDesc, setPeopleDesc] = useState("");
+
   const [bussinessType, setBussinessType] = useState("");
 
-  // Animation control
+  const router = useRouter();
   const [shake, setShake] = useState(false);
+  const { share, setMode, updateShare } = useParticStore();
+  const { mode } = share;
 
-  // Validation
   const isStepValid =
-    (sStep === 1 && title.trim() !== "" && desc.trim() !== "") ||
-    (sStep === 2 &&
-      country.trim() !== "" &&
-      state.trim() !== "" &&
+    // Step 1: title
+    (sStep === 1 && title.trim() !== "") ||
+    // Step 2: store type
+    (sStep === 2 && storeType.trim() !== "") ||
+    // Step 3: Delhi location
+    (sStep === 3 &&
+      country === "India" &&
+      state === "Delhi" &&
       city.trim() !== "" &&
-      pin.trim() !== "" &&
-      fullAdd.trim() !== "") ||
-    (sStep === 3 && price.trim() !== "" && Number(price) > 0) ||
+      isValidDelhiPin(pin) &&
+      fullAdd.trim().length > 10) ||
+    // Step 4: images
     (sStep === 4 &&
       bannerImage !== null &&
-      otherImages.filter((img) => img !== null).length === 5) ||
-    (sStep === 5 && bussinessType.trim() !== "") ||
-    sStep > 6;
+      otherImages.filter((img) => img !== null).length === 4) ||
+    // Step 5: must select a sharing mode
+    (sStep === 5 && mode !== "") ||
+    // Step 6: validate by sharing mode
+    (sStep === 6 &&
+      mode !== "" &&
+      // HOURS_BY_HOURS
+      ((mode === "HOURS_BY_HOURS" && !!share.startTime && !!share.endTime) ||
+        // DAYS_BY_DAYS
+        (mode === "DAYS_BY_DAYS" &&
+          Array.isArray(share.days) &&
+          share.days.length > 0) ||
+        // SPLIT_STORE
+        (mode === "SPLIT_STORE" &&
+          typeof share.sqft === "number" &&
+          share.sqft > 0) ||
+        // DAY_OR_NIGHT
+        (mode === "DAY_OR_NIGHT" &&
+          (share.dayOrNight === "Day" || share.dayOrNight === "Night")) ||
+        // Weekend (no extra input)
+        mode === "Weekend" ||
+        // Regular (no extra input)
+        mode === "Regular")) ||
+    (sStep === 7 && videoFile !== null) ||
+    (sStep === 8 && Number(price) > 0) ||
+    (sStep === 9 && bussinessType !== "") ||
+    (sStep === 10 && desc !== "") ||
+    (sStep === 11 && peopleDesc !== "") ||
+    // Step 7+
+    sStep > 12;
 
   const handleNext = () => {
     if (!isStepValid) {
@@ -66,7 +112,7 @@ const AddFormStore = () => {
       setTimeout(() => setShake(false), 500);
       return;
     }
-    setSstep(sStep + 1);
+    nextSStep();
   };
 
   const handleFinish = async () => {
@@ -74,21 +120,38 @@ const AddFormStore = () => {
     const formData = new FormData();
 
     formData.append("title", title);
-    formData.append("desc", desc);
-
+    formData.append("storeSize", storeType);
     formData.append("country", country);
     formData.append("state", state);
     formData.append("city", city);
     formData.append("pin", pin);
     formData.append("fullAddress", fullAdd);
-    formData.append("priceInr", price);
-
-    formData.append("businessType", bussinessType);
-
     if (bannerImage) formData.append("bannerImage", bannerImage);
     otherImages.forEach((img, index) => {
       if (img) formData.append(`image_${index}`, img);
     });
+    formData.append(
+      "share",
+      JSON.stringify({
+        mode: share.mode,
+        startTime: share.startTime ?? null,
+        endTime: share.endTime ?? null,
+        days: share.days ?? [],
+        sqft: share.sqft ?? null,
+        dayOrNight: share.dayOrNight ?? null,
+      })
+    );
+    if (videoFile) {
+      formData.append("videoFile", videoFile);
+    }
+
+    formData.append("desc", desc);
+
+    formData.append("priceInr", price);
+
+    formData.append("businessType", bussinessType);
+    formData.append("peopleDesc", peopleDesc);
+    console.log(share);
 
     try {
       const res = await axios.post("/api/store/create", formData, {
@@ -97,7 +160,8 @@ const AddFormStore = () => {
         },
       });
 
-      console.log(res.data);
+      console.log(res.data.store);
+      router.push(`/dashboard/store/${res.data.store.id}`);
     } catch (err) {
       console.error(err);
     }
@@ -107,443 +171,90 @@ const AddFormStore = () => {
   return (
     <div className="flex flex-col w-full max-w-6xl mx-auto gap-6 mt-4 pb-28">
       {/* STEP 0 */}
-      {sStep === 0 && (
-        <div className="flex flex-col gap-8 animate-fadeIn">
-          {/* Illustration */}
-          <div className="flex justify-center w-full flex-col text-center items-center gap-5">
-            <Image src={"/qu1.svg"} width={500} height={500} alt="hello" />
-            {/* Heading */}
-            <Heading
-              title="List Your Store for Rent"
-              description="List your store and connect with reliable partners to split the rent effortlessly."
-            />
+      {sStep === 0 && <StepIntro />}
 
-            {/* Actions */}
-            <div className="flex gap-3">
-              <Link href="/dashboard" className="w-full">
-                <Button
-                  variant="outline"
-                  className="cursor-pointer rounded-xl py-6 text-sm font-medium hover:scale-[1.02] transition"
-                >
-                  ← Back to Dashboard
-                </Button>
-              </Link>
+      {sStep === 1 && <StepTitle title={title} setTitle={setTitle} />}
 
-              <Button
-                onClick={() => setSstep(1)}
-                className="rounded-xl cursor-pointer py-6 text-sm font-medium hover:scale-[1.02] transition"
-              >
-                Start Now
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 1 */}
-      {sStep === 1 && (
-        <div className="w-full space-y-4">
-          <Heading
-            title="Add Store Details"
-            description="List your store and connect with reliable partners to reduce rent costs."
-          />
-
-          {/* Store Title */}
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              Store Title
-            </Label>
-            <input
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter your store name"
-              className="
-                w-full px-4 py-3 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-              "
-            />
-          </div>
-
-          {/* Store Description */}
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              Description
-            </Label>
-            <textarea
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              placeholder="Write a short description about the store"
-              className="
-                w-full px-4 py-2 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-                min-h-[200px]
-              "
-            />
-          </div>
-        </div>
-      )}
       {sStep === 2 && (
-        <div className="space-y-4">
-          <Heading
-            title="Select Location"
-            description="Tell Me About Your Location Where Is Your Store."
-          />
-
-          {/* Country Dropdown using Shadcn */}
-          <div className="flex w-full flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              Country
-            </Label>
-
-            {/* IMPORTANT WRAPPER */}
-            <div className="w-full">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  {/* IMPORTANT: wrapper div */}
-                  <div className="w-full">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between px-4 py-6 rounded-lg border border-gray-400 dark:border-gray-600 dark:text-white bg-white dark:bg-black"
-                    >
-                      {country ? (
-                        <span className="flex items-center gap-2">
-                          🇮🇳 {country}
-                        </span>
-                      ) : (
-                        "Select Country"
-                      )}
-                    </Button>
-                  </div>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent
-                  align="start"
-                  sideOffset={4}
-                  className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
-                >
-                  <DropdownMenuItem
-                    onClick={() => setCountry("India")}
-                    className="flex w-full items-center gap-2 px-4 py-3 cursor-pointer"
-                  >
-                    India
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              State
-            </Label>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="
-          w-full justify-between 
-          px-4 py-6 
-          rounded-lg border
-          border-gray-400 dark:border-gray-600
-          dark:text-white bg-white dark:bg-black
-        "
-                >
-                  {state ? (
-                    <span className="flex items-center gap-2"> {state}</span>
-                  ) : (
-                    "Select State"
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                align="start"
-                className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
-              >
-                <DropdownMenuItem
-                  onClick={() => Sstate("Delhi")}
-                  className="flex items-center w-full gap-2 cursor-pointer"
-                >
-                  Delhi
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={() => Sstate("Haryana")}
-                  className="flex items-center w-full gap-2 cursor-pointer"
-                >
-                  Haryana
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              City
-            </Label>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="
-          w-full justify-between 
-          px-4 py-6 
-          rounded-lg border
-          border-gray-400 dark:border-gray-600
-          dark:text-white bg-white dark:bg-black
-        "
-                >
-                  {city ? city : "Select City"}
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                align="start"
-                className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
-              >
-                {/* Cities for Haryana */}
-                {state === "Haryana" && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => setCity("Gurgaon")}
-                      className="cursor-pointer"
-                    >
-                      Gurgaon
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => setCity("Noida")}
-                      className="cursor-pointer"
-                    >
-                      Noida
-                    </DropdownMenuItem>
-                  </>
-                )}
-
-                {/* Cities for Delhi */}
-                {state === "Delhi" && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => setCity("New Delhi")}
-                      className="cursor-pointer"
-                    >
-                      New Delhi
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => setCity("South Delhi")}
-                      className="cursor-pointer"
-                    >
-                      South Delhi
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => setCity("West Delhi")}
-                      className="cursor-pointer"
-                    >
-                      West Delhi
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => setCity("East Delhi")}
-                      className="cursor-pointer"
-                    >
-                      East Delhi
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              Pin
-            </Label>
-            <input
-              type="number"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              placeholder="Pin eg : (110041)"
-              className="
-                w-full px-4 py-1 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-              "
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              Full Address
-            </Label>
-            <textarea
-              value={fullAdd}
-              onChange={(e) => setFullAdd(e.target.value)}
-              placeholder="Write Full Address"
-              className="
-                w-full px-4 py-1 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-              "
-            />
-          </div>
-        </div>
+        <StepTypeStore value={storeType} onChange={setStoreType} />
       )}
-      {sStep == 3 && (
-        <div className="space-y-4">
-          <Heading
-            title="Price (₹)"
-            description="How much rent you want split"
-          />
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="Enter your store name"
-            className="
-                w-full px-4 py-3 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-              "
-          />
-        </div>
+
+      {sStep === 3 && (
+        <LocationPicker
+          country={country}
+          setCountry={setCountry}
+          state={state}
+          Sstate={Sstate}
+          city={city}
+          setCity={setCity}
+          pin={pin}
+          setPin={setPin}
+          fullAdd={fullAdd}
+          setFullAdd={setFullAdd}
+        />
       )}
 
       {sStep == 4 && (
-        <div className="space-y-6">
-          <Heading
-            title="Upload Images"
-            description="Add a banner image and room photos"
-          />
-
-          {/* Banner Image */}
-          <div>
-            <p className="font-semibold mb-2">Banner Image (Required)</p>
-
-            <div
-              className="w-full h-64 border-2 border-dashed border-gray-400 dark:border-gray-600 
-                      rounded-xl flex items-center justify-center bg-gray-50 dark:bg-zinc-900 cursor-pointer"
-              onClick={() => bannerInputRef.current?.click()}
-            >
-              {bannerImage ? (
-                <Image
-                  src={URL.createObjectURL(bannerImage)}
-                  className="w-full h-full object-contain rounded-xl"
-                  alt="banner preview"
-                  width={50}
-                  height={50}
-                />
-              ) : (
-                <span className="text-gray-500">
-                  Click to upload Banner Image
-                </span>
-              )}
-            </div>
-
-            <input
-              type="file"
-              ref={bannerInputRef}
-              className="hidden"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) setBannerImage(file);
-              }}
-            />
-          </div>
-
-          {/* Other Images */}
-          <div>
-            <p className="font-semibold mb-2">
-              Room / Property Images (5 Required)
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="w-full h-28 border-2 border-dashed border-gray-400 dark:border-gray-600
-                       rounded-xl flex items-center justify-center bg-gray-50 dark:bg-zinc-900 
-                       cursor-pointer"
-                  onClick={() => imageInputRefs.current[index]?.click()}
-                >
-                  {otherImages[index] ? (
-                    <Image
-                      width={140}
-                      height={150}
-                      src={URL.createObjectURL(otherImages[index] as File)}
-                      className="w-full h-full object-cover rounded-xl"
-                      alt="preview"
-                    />
-                  ) : (
-                    <span className="text-gray-500 text-sm text-center">
-                      + Image {index + 1}
-                    </span>
-                  )}
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    ref={(el) => {
-                      imageInputRefs.current[index] = el;
-                    }}
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-
-                      const updated = [...otherImages];
-                      updated[index] = file;
-                      setOtherImages(updated);
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <StepImage
+          bannerImage={bannerImage}
+          otherImages={otherImages}
+          setBannerImage={setBannerImage}
+          setOtherImages={setOtherImages}
+        />
       )}
+      {sStep == 5 && <StepPartic />}
+      {sStep == 6 && <StoreMethodtype />}
+      {sStep == 7 && (
+        <TrueVideo
+          setVideoFile={setVideoFile}
+          videoUrl={videoUrl}
+          setVideoUrl={setVideoUrl}
+        />
+      )}
+      {sStep == 8 && <PriceInput price={price} setPrice={setPrice} />}
 
-      {sStep == 5 && (
-        <div className="space-y-6">
+      {sStep == 9 && (
+        <div className="space-y-8 justify-center flex flex-col items-center">
           <Heading
             title="Business Details"
-            description="Tell us about your business — what type of store do you run? For example: Yoga Studio, Gaming Café, Restaurant, or any other service."
+            description="What kind of business do you run?"
+            className="text-center"
           />
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              Bussiness Type
-            </Label>
-            <input
-              value={bussinessType}
-              onChange={(e) => setBussinessType(e.target.value)}
-              placeholder="Enter your Bussiness Type"
-              className="
-                w-full px-4 py-3 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-              "
-            />
-          </div>
+
+          <input
+            value={bussinessType}
+            onChange={(e) => setBussinessType(e.target.value)}
+            placeholder="Business type"
+            className="
+      w-full max-w-xl
+      text-5xl font-semibold text-center
+      bg-transparent
+      border-none outline-none
+      placeholder:text-gray-400
+      caret-black dark:caret-white
+      dark:text-white
+      focus:ring-0
+    "
+          />
+
+          {/* Helper text like Airbnb */}
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md">
+            Example keywords: Barber, Bakery, Yoga Studio, Gaming Café,
+            Restaurant, Gym, Salon, Coaching Center
+          </p>
         </div>
       )}
 
-      {sStep == 6 && (
+      {sStep == 10 && <StepDesc description={desc} setDescription={setDesc} />}
+
+      {sStep == 11 && (
+        <PeopleDesc
+          partnerDescription={peopleDesc}
+          setPartnerDescription={setPeopleDesc}
+        />
+      )}
+
+      {sStep == 12 && (
         <div className="text-center space-y-6 flex flex-col items-center justify-center">
           {/* Large Responsive Image */}
           <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center">
@@ -569,57 +280,16 @@ const AddFormStore = () => {
       )}
 
       {/* Bottom Navigation */}
-      {sStep !== 0 && (
-        <div
-          className="
-      fixed bottom-0 left-0 right-0 
-      bg-white dark:bg-black 
-      border-t border-gray-300 dark:border-gray-700 
-      p-4 flex items-center justify-between
-    "
-        >
-          {/* Prev */}
-          <Button
-            size="lg"
-            onClick={() => setSstep(sStep - 1)}
-            disabled={sStep === 1}
-            className="rounded-xl py-6 cursor-pointer text-base"
-          >
-            Prev
-          </Button>
 
-          {/* Next / Finish with Shake Animation */}
-          <motion.div
-            animate={shake ? { x: [-10, 10, -10, 10, 0] } : { x: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            {sStep === 6 ? (
-              // ✅ FINISH BUTTON
-
-              <Button
-                size="lg"
-                disabled={loading}
-                onClick={handleFinish} // <-- your new function
-                className="rounded-xl py-6 cursor-pointer text-base"
-              >
-                Finish
-              </Button>
-            ) : (
-              // ✅ NEXT BUTTON
-              <Button
-                size="lg"
-                onClick={handleNext}
-                disabled={!isStepValid}
-                className={`rounded-xl py-6 cursor-pointer text-base 
-            ${!isStepValid ? "opacity-60 cursor-not-allowed" : ""}
-          `}
-              >
-                Next
-              </Button>
-            )}
-          </motion.div>
-        </div>
-      )}
+      <FormNavigation
+        step={sStep}
+        isValid={isStepValid}
+        loading={loading}
+        shake={shake}
+        onPrev={prevStep}
+        onNext={handleNext}
+        onFinish={handleFinish}
+      />
     </div>
   );
 };

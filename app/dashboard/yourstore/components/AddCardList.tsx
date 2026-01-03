@@ -6,7 +6,13 @@ import React, { useEffect, useState } from "react";
 import Heading from "../../components/heading";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Loader, MapPin, Store as StoreIcon, IndianRupee } from "lucide-react";
+import {
+  Loader,
+  MapPin,
+  Store as StoreIcon,
+  IndianRupee,
+  Edit,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 /* =========================
@@ -93,7 +99,7 @@ const AddCardList = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: index * 0.06 }}
             className="
-              relative rounded-[28px] bg-neutral-50 p-3
+              relative rounded-[28px] dark:bg-black  bg-neutral-50 p-3
               shadow-[0_20px_60px_rgba(0,0,0,0.08)]
               transition hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]
             "
@@ -109,12 +115,19 @@ const AddCardList = () => {
             </div>
 
             {/* CONTENT */}
-            <div className="px-3 pb-3 pt-4 w-[400px] space-y-3">
-              <div className="flex items-center gap-2">
-                <StoreIcon className="h-4 w-4 text-primary" />
-                <h3 className="line-clamp-1 text-lg font-semibold text-neutral-900">
-                  {store.title}
-                </h3>
+            <div className="px-3 pb-3 pt-4 w-[350px] space-y-3">
+              <div className="flex justify-between px-2">
+                <div className="flex items-center gap-2">
+                  <StoreIcon className="h-4 w-4 text-primary" />
+                  <h3 className="line-clamp-1 text-lg font-semibold ">
+                    {store.title}
+                  </h3>
+                </div>
+                <Link href={`/dashboard/edit/${store.id}`}>
+                  <Button>
+                    <Edit className="w-5 h-5 rounded-full" />
+                  </Button>
+                </Link>
               </div>
 
               <p className="text-sm text-neutral-500">{store.businessType}</p>
@@ -126,8 +139,8 @@ const AddCardList = () => {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-1 text-base font-semibold text-neutral-900">
+              <div className="flex items-center justify-between pt-2 ">
+                <div className="flex items-center gap-1 text-base font-semibold ">
                   <IndianRupee className="h-4 w-4" />
                   {store.priceInr}
                 </div>

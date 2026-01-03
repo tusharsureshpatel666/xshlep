@@ -1,0 +1,114 @@
+    <div className=" p-6 space-y-6">
+      <div className="  p-6 space-y-8">
+        {/* TITLE */}
+        <div>
+          <h1 className="text-3xl font-bold">{store.title}</h1>
+          <p className="text-muted-foreground mt-2">{store.desc}</p>
+        </div>
+
+        {/* DETAILS */}
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <p>
+            <strong>Country:</strong> {store.country}
+          </p>
+          <p>
+            <strong>State:</strong> {store.state}
+          </p>
+          <p>
+            <strong>City:</strong> {store.city}
+          </p>
+          <p>
+            <strong>Pin:</strong> {store.pin}
+          </p>
+          <p className="col-span-2">
+            <strong>Address:</strong> {store.fullAddress}
+          </p>
+          <p>
+            <strong>Business Type:</strong> {store.businessType}
+          </p>
+          <p>
+            <strong>Price:</strong> ₹{store.priceInr}
+          </p>
+        </div>
+
+        {/* BANNER IMAGE */}
+        {store.bannerImageUrl && (
+          <div className="relative w-full h-64 rounded-lg overflow-hidden">
+            <Image
+              src={store.bannerImageUrl}
+              alt="Store Banner"
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
+
+        {/* STORE IMAGES */}
+        {store.images?.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Store Images</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {store.images.map((img) => (
+                <div
+                  key={img.id}
+                  className="relative w-full h-48 rounded-lg overflow-hidden"
+                >
+                  <Image
+                    src={img.url}
+                    alt="Store Image"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* LOCATION */}
+        {/* MAP */}
+        {store.latitude && store.longitude && (
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">Location</h2>
+
+            <div className="w-full h-[350px] rounded-lg overflow-hidden border">
+              <iframe
+                src={`https://www.google.com/maps?q=${store.latitude},${store.longitude}&z=15&output=embed`}
+                width="100%"
+                height="100%"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              📍 Lat: {store.latitude}, Lng: {store.longitude}
+            </p>
+          </div>
+        )}
+      </div>
+      );
+    </div>
+
+    import { getStoreById } from "@/lib/query/getstore";
+import Image from "next/image";
+
+interface StorePageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function StorePage({ params }: StorePageProps) {
+  const storeId = await params;
+
+  if (!storeId) {
+    return <div className="p-6">Store not found</div>;
+  }
+
+  const fetchStores = async () => {
+    const store = await getStoreById(storeId.id);
+    console.log(store);
+    return store;
+  };
+  const store = await fetchStores();

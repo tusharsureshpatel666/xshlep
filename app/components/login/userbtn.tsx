@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { ModeToggle } from "@/app/dashboard/components/theme/darkbtn";
 import { LogOut, Store, User } from "lucide-react";
+import Image from "next/image";
 
 const Userbtn = () => {
   const { data: session } = useSession();
@@ -22,7 +23,13 @@ const Userbtn = () => {
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
         <Avatar className="cursor-pointer hover:opacity-90 transition">
-          <AvatarImage src={user?.image || ""} alt={user?.name || "User"} />
+          <AvatarImage
+            width={30}
+            height={30}
+            src={user?.image || "/avatar.avif"}
+            alt="/avatar.avif"
+            className="rounded-md"
+          />
           <AvatarFallback>
             {user?.name?.charAt(0).toUpperCase() || "U"}
           </AvatarFallback>

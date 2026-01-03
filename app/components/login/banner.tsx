@@ -12,7 +12,7 @@ const Banner = () => {
 
       <div className="flex items-center gap-3">
         <Image
-          src="/avtar.jpg"
+          src="/avatar.avif"
           width={60}
           height={60}
           alt="user"

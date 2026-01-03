@@ -15,7 +15,7 @@ export default function AboutPage() {
           transition={{ duration: 0.6 }}
           className="text-5xl font-bold"
         >
-          About Xsklep
+          About 2k1s
         </motion.h1>
 
         <motion.p

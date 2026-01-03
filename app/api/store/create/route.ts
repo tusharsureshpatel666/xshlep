@@ -18,8 +18,15 @@ export async function POST(req: Request) {
     const pin = formData.get("pin") as string;
     const fullAddress = formData.get("fullAddress") as string;
     const priceInr = Number(formData.get("priceInr"));
+    const peopleDesc = formData.get("peopleDesc") as string;
+    const storeSize = formData.get("storeSize") as string;
 
     const businessType = formData.get("businessType") as string;
+    const videoFile = formData.get("videoFile") as File;
+
+    const uploadedVideo = await uploadToCloudinary(videoFile, "video");
+
+    const videoUrl = uploadedVideo.secure_url;
 
     let lat: number | null = null;
     let lng: number | null = null;
@@ -44,26 +51,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const bannerImage = formData.get("bannerImage") as File | null;
+    const bannerImage = formData.get("bannerImage");
 
-    const otherImages: File[] = [];
-    for (let i = 0; i < 5; i++) {
-      const img = formData.get(`image_${i}`);
-      if (img instanceof File) otherImages.push(img);
-    }
     let bannerUrl: string | null = null;
 
-    if (bannerImage) {
-      const uploaded: UploadApiResponse = await uploadToCloudinary(bannerImage);
+    if (bannerImage instanceof File && bannerImage.size > 0) {
+      const uploaded = await uploadToCloudinary(bannerImage, "image");
       bannerUrl = uploaded.secure_url;
     }
 
+    const otherImages: File[] = [];
+    for (let i = 0; i < 4; i++) {
+      const img = formData.get(`image_${i}`);
+      if (img instanceof File) otherImages.push(img);
+    }
+    // let bannerUrl: string | null = null;
+
+    // if (bannerImage) {
+    //   const uploaded: UploadApiResponse = await uploadToCloudinary(bannerImage);
+    //   bannerUrl = uploaded.secure_url;
+    // }
+
     const imageUrls: string[] = [];
 
-    for (const file of otherImages) {
-      const uploaded: UploadApiResponse = await uploadToCloudinary(file);
-      imageUrls.push(uploaded.secure_url);
+    for (let i = 0; i < 4; i++) {
+      const img = formData.get(`image_${i}`);
+
+      if (img instanceof File && img.size > 0) {
+        const uploaded = await uploadToCloudinary(img, "image");
+        imageUrls.push(uploaded.secure_url);
+      }
     }
+
+    const shareRaw = formData.get("share") as string;
+    console.log(shareRaw);
+    if (!shareRaw) throw new Error("Share data missing");
+
+    const share = JSON.parse(shareRaw);
+    const shareMode = share.mode;
 
     const store = await prisma.store.create({
       data: {
@@ -79,7 +104,17 @@ export async function POST(req: Request) {
         businessType,
         latitude: lat,
         longitude: lng,
+        videoUrl,
+        peopleDesc,
+        storeSize: storeSize,
         bannerImageUrl: bannerUrl,
+        shareMode,
+        startTime: share.startTime,
+        endTime: share.endTime,
+        days: share.days ?? [],
+        sqft: share.sqft,
+        dayOrNight: share.dayOrNight,
+
         images: {
           create: imageUrls.map((url, index) => ({
             url,

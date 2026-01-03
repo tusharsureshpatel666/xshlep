@@ -22,7 +22,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       {/* Footer */}
       <footer className="w-full border-t dark:border-gray-800 py-6 mt-10">
         <div className="max-w-6xl mx-auto px-4 flex justify-between text-sm text-gray-500 dark:text-gray-400">
-          <p>© 2025 Xsklep — All Rights Reserved</p>
+          <p>© 2025 2k1s — All Rights Reserved</p>
           <div className="flex gap-4">
             <Link
               href="/common/privacy"

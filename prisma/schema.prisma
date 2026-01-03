@@ -13,6 +13,15 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ShareMode {
+  HOURS_BY_HOURS
+  DAYS_BY_DAYS
+  SPLIT_STORE
+  DAY_OR_NIGHT
+  WEEKEND
+  REGULAR
+}
+
 
 
 model User {
@@ -23,30 +32,54 @@ model User {
   createdAt DateTime @default(now())
   onboardingComplete Boolean @default(false)
   referralSource String?
-  phoneNumber Int @unique
+  
+  
   stores Store[] @relation("OwerStores")
 }
 
 model Store {
-  id String @id @default(uuid())
-  ownerId String
-  owner User @relation("OwerStores", fields: [ownerId], references: [id])
-  title String
-  desc    String   
-  country        String
-  state          String
-  city           String
-  pin            String
-  fullAddress    String
-  priceInr       Int
-  businessType   String
-  bannerImageUrl String?      // store uploaded file URL / path
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  images         StoreImage[] 
-   latitude  Float?
-  longitude Float?
+  id              String      @id @default(uuid())
+
+  ownerId         String
+  owner           User        @relation("OwerStores", fields: [ownerId], references: [id])
+
+  title           String
+  desc            String
+  peopleDesc      String
+
+  storeSize       String
+  businessType    String
+
+  country         String
+  state           String
+  city            String
+  pin             String
+  fullAddress     String
+
+  latitude        Float?
+  longitude       Float?
+
+  bannerImageUrl  String?
+  images           StoreImage[]
+
+  videoUrl        String
+
+  priceInr        Int
+
+  shareMode       ShareMode
+  startTime     String?
+  endTime       String?
+  days          String[]
+  sqft          Int?
+  dayOrNight    String?
+  
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
+
+
+
 
 model StoreImage {
   id        String   @id @default(cuid())
