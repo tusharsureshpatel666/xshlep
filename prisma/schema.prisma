@@ -18,8 +18,8 @@ enum ShareMode {
   DAYS_BY_DAYS
   SPLIT_STORE
   DAY_OR_NIGHT
-  WEEKEND
-  REGULAR
+  Weekend
+  Regular
 }
 
 
@@ -35,6 +35,7 @@ model User {
   
   
   stores Store[] @relation("OwerStores")
+  likedStores          StoreLike[] 
 }
 
 model Store {
@@ -72,7 +73,7 @@ model Store {
   days          String[]
   sqft          Int?
   dayOrNight    String?
-  
+  likes           StoreLike[] 
 
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -88,4 +89,15 @@ model StoreImage {
   url       String
   order     Int      @default(0) // order index (0..4)
   createdAt DateTime @default(now())
+}
+
+model StoreLike {
+  id        String   @id @default(uuid())
+  userId    String
+  storeId   String
+    user      User     @relation(fields: [userId], references: [id])
+    store     Store    @relation(fields: [storeId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, storeId]) // prevent double-like
 }

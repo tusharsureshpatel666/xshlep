@@ -1,6 +1,8 @@
+"use client";
+
 import Main from "./components/Main";
 
-export default async function Dashboard() {
+export default function Dashboard() {
   return (
     <div>
       <Main />

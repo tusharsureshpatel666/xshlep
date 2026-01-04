@@ -4,6 +4,9 @@ import { Heart, Share, Star, Trash } from "lucide-react";
 import { getStoreById } from "@/lib/query/getstore";
 import { auth } from "@/lib/auth";
 import DeleteStoreButton from "./components/DeleteStore";
+import ShareStore from "./components/ShareStore";
+import { findUserById } from "@/lib/findUser";
+import LoveStore from "./components/LoveStore";
 
 interface StorePageProps {
   params: {
@@ -13,6 +16,7 @@ interface StorePageProps {
 
 export default async function StorePage({ params }: StorePageProps) {
   const storeId = await params;
+  console.log(storeId.id);
 
   const userId = await auth();
   console.log(userId?.user?.id);
@@ -23,29 +27,28 @@ export default async function StorePage({ params }: StorePageProps) {
 
   const fetchStores = async () => {
     const store = await getStoreById(storeId.id);
+
     console.log(store);
     return store;
   };
 
   const store = await fetchStores();
+  const OwerDetail = await findUserById(store?.ownerId);
+  console.log(OwerDetail);
   const isOwner = (await userId?.user?.id) === (await store?.ownerId);
   console.log(storeId.id, store?.ownerId);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
       {/* ================= HEADER ================= */}
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-semibold">{store?.title}</h1>
         </div>
 
-        <div className="flex gap-4 text-sm">
-          <button className="flex items-center gap-1 underline">
-            <Share className="h-4 w-4" /> Share
-          </button>
-          <button className="flex items-center gap-1 underline">
-            <Heart className="h-4 w-4" /> Save
-          </button>
+        <div className="flex gap-4 items-center text-sm">
+          <ShareStore paramsId={storeId} />
+          <LoveStore storeId={storeId.id} initialLiked={userId?.user?.id} />
 
           {isOwner && <DeleteStoreButton storeId={store?.id} />}
         </div>
@@ -78,26 +81,19 @@ export default async function StorePage({ params }: StorePageProps) {
           <p className="text-sm">3 guests · 1 bedroom · 1 bed · 1 bathroom</p>
 
           {/* RATING */}
-          <div className="flex items-center gap-4 border rounded-xl p-4 w-fit">
-            <span className="flex items-center gap-1 font-medium">
-              <Star className="h-4 w-4 fill-black" /> {store?.rating}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {store.reviews} reviews
-            </span>
-            <span className="text-sm font-medium text-green-600">
-              Guest favourite
-            </span>
-          </div>
 
           {/* HOST */}
           <div className="flex items-center gap-4 pt-4 border-t">
-            <div className="h-12 w-12 rounded-full bg-gray-300" />
+            <div className="h-12 w-12 rounded-full bg-gray-300">
+              <Image
+                src={OwerDetail.images}
+                alt="hello"
+                width={50}
+                height={50}
+              />
+            </div>
             <div>
-              <p className="font-medium">Hosted by Akash</p>
-              <p className="text-sm text-muted-foreground">
-                Superhost · 4 years hosting
-              </p>
+              <p className="font-medium">Posted By {OwerDetail.name}</p>
             </div>
           </div>
 

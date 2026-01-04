@@ -2,14 +2,16 @@
 import React from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import Heading from "../../components/heading";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AddCardList from "../../yourstore/components/AddCardList";
 
 const ProfileHeader = () => {
   const { data: session } = useSession();
   return (
-    <div className="flex items-center justify-between rounded-xl border bg-white p-6 shadow-sm">
-      {/* Left */}
-      <div className="flex items-center gap-4">
-        <div className="relative h-14 w-14 overflow-hidden rounded-full bg-gray-200">
+    <div className="flex items-center flex-col  rounded-xl  p-6 shadow-sm">
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative h-38 w-38 overflow-hidden rounded-full bg-gray-200">
           <Image
             src={session?.user?.image || "/avatar.png"} // replace with session image later
             alt="Profile"
@@ -17,19 +19,20 @@ const ProfileHeader = () => {
             className="object-cover"
           />
         </div>
-
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">Your Profile</h2>
-          <p className="text-sm text-gray-500">
-            Manage your personal information
-          </p>
+        <div className="flex flex-col items-center">
+          <h1 className="text-xl lg:text-2xl">{session?.user?.name}</h1>
+          <p className="text-gray-500 text-sm">{session?.user?.email}</p>
         </div>
       </div>
-
-      {/* Right */}
-      <button className="rounded-md border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-        Edit Profile
-      </button>
+      <Tabs defaultValue="Store" className="h-">
+        <TabsList>
+          <TabsTrigger value="Store">Store</TabsTrigger>
+          <TabsTrigger value="Saved">Saved</TabsTrigger>
+        </TabsList>
+        <TabsContent value="Store">
+          <AddCardList />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
