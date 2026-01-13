@@ -1,385 +1,158 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import React, { useState } from "react";
-import Heading from "../components/heading";
-import Image from "next/image";
-import { Label } from "@/components/ui/label";
-import { motion } from "framer-motion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import axios from "axios";
+
 import { useRouter } from "next/navigation";
-import { useStoreSearch } from "@/store/store";
+import {
+  useSearchState,
+  useSearchStoreData,
+  useStoreSearch,
+} from "@/store/store";
+import SearchFormNavigation from "../addstore/components/form-steps/SearchNavitage";
+import TypeofBussiness from "./searchstep/TypeofBussiness";
+import SearchLoaction from "./searchstep/Loaction";
+import Price from "../addstore/components/form-steps/Price";
+import { useEffect, useState } from "react";
 
 const Findstore = () => {
-  const [sStep, setSstep] = useState(0);
-  const [bussinessType, setBussinessType] = useState("");
+  const {
+    TypeofStore,
+    country,
+    state,
+    city,
+    pin,
+    minprice,
+    maxprice,
+    setUserLat,
+    setUserLog,
+    userlat,
+    userlog,
+  } = useSearchStoreData();
+
   const [shake, setShake] = useState(false);
-  const [country, setCountry] = useState("");
-  const [city, setCity] = useState("");
-  const [state, Sstate] = useState("");
+
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState();
-  const router = useRouter();
-
-  const searchStore = async (bussinessType: string) => {
-    if (!bussinessType) return;
-
+  const userGeoLoaction = async () => {
     try {
-      const response = await axios.post("/api/store/getstore", {
-        bussinessType,
-      });
-      console.log(response);
-      const stores = response.data.stores;
+      const addressString = `${city}, ${state}, ${country}, ${pin}`;
 
-      console.log("Matching stores:", stores);
-      return stores;
-    } catch (error: any) {
-      console.error(
-        "Error fetching stores:",
-        error.response?.data || error.message
-      );
-      return [];
+      const res = await fetch("/api/geocode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: addressString }),
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      if (data.lat && data.lng) {
+        setUserLat(data.lat);
+        setUserLog(data.lng);
+      }
+    } catch (error) {
+      console.error("Geolocation error:", error);
     }
   };
 
-  const [min, setMin] = useState<string>("");
-  const [max, setMax] = useState<string>("");
+  const { sStep, prevStep, nextSStep, resetStep } = useSearchState();
+  useEffect(() => {
+    if (country && state && city && pin) {
+      userGeoLoaction();
+    }
+  }, [country, state, city, pin]);
 
+  const isStepValid =
+    (sStep == 1 && TypeofStore.trim() !== "") ||
+    (sStep == 2 &&
+      country.trim() !== "" &&
+      state.trim() !== "" &&
+      city.trim() !== "" &&
+      pin !== "") ||
+    (sStep == 3 && minprice !== 0 && maxprice !== 0);
   const handleNext = () => {
-    // if (!isStepValid) {
-    //   setShake(true);
-    //   setTimeout(() => setShake(false), 500);
-    //   return;
-    // }
-    setSstep(sStep + 1);
+    if (!isStepValid) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+    nextSStep();
   };
   const handleFinish = async () => {
     setLoading(true);
+    try {
+      const {
+        userlat,
+        userlog,
 
-    const result = await searchStore(bussinessType);
-    useStoreSearch.getState().setStores(result);
-    console.log(result);
+        minprice,
+        maxprice,
+      } = useSearchStoreData.getState();
 
-    setLoading(false);
-    router.push("/dashboard/result");
+      // Basic validation
+      if (!userlat || !userlog) {
+        console.error("User location not available");
+        return;
+      }
+
+      const res = await fetch("/api/store/nearby", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userlat,
+          userlog,
+
+          minprice,
+          maxprice,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch nearby stores");
+      }
+
+      const stores = await res.json();
+
+      console.log("Nearest stores:", stores);
+
+      setLoading(false);
+      // 👉 setStores(stores) OR route to results page
+    } catch (error) {
+      console.error("handleFinish error:", error);
+      setLoading(false);
+    }
   };
-  const isStepValid = {};
+
+  const [data, setData] = useState();
+  const router = useRouter();
 
   return (
-    <div className="flex flex-col w-full max-w-7xl mx-auto gap-6 mt-4 pb-28">
-      {/* STEP 0 */}
-      {sStep === 0 && (
-        <div className="flex flex-col gap-6 items-center text-center">
-          <div className="flex justify-center w-full items-center text-center">
-            <Image src="/search1.svg" width={500} height={500} alt="hello" />
-          </div>
-
-          <Heading
-            title="Hey! What’s your business all about? 🚀"
-            description="Give us a quick intro—what you do, what you sell, and why people love your brand. This helps us craft the perfect listing for your shared store."
-          />
-
-          <Button
-            onClick={() => setSstep(1)}
-            className="rounded-xl cursor-pointer  py-6 text-sm"
-          >
-            Search Now
-          </Button>
-        </div>
-      )}
+    <div>
       {sStep == 1 && (
-        <div className="w-full space-y-4">
-          <Heading
-            title="Tell Me About Your Bussiness"
-            description="Share the details of your business so we can match your store with the perfect partners for shared rent."
-          />
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              Bussiness Type
-            </Label>
-            <input
-              required
-              value={bussinessType}
-              onChange={(e) => setBussinessType(e.target.value)}
-              placeholder="Enter your Bussiness Type"
-              className="
-                w-full px-4 py-3 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-              "
-            />
-          </div>
+        <div>
+          <TypeofBussiness />
         </div>
       )}
       {sStep == 2 && (
-        <div className="space-y-4">
-          <Heading
-            title="Select Location"
-            description="Tell Me About Your Location Where Is Your Store."
-          />
-
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              Country
-            </Label>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="
-              w-full justify-between 
-              px-4 py-6 
-              rounded-lg border
-              border-gray-400 dark:border-gray-600
-              dark:text-white bg-white dark:bg-black
-            "
-                >
-                  {country ? (
-                    <span className="flex items-center gap-2">
-                      🇮🇳 {country}
-                    </span>
-                  ) : (
-                    "Select Country"
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                align="start"
-                className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
-              >
-                <DropdownMenuItem
-                  onClick={() => setCountry("India")}
-                  className="flex items-center w-full gap-2 cursor-pointer"
-                >
-                  🇮🇳 India
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              State
-            </Label>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="
-                    w-full justify-between 
-                    px-4 py-6 
-                    rounded-lg border
-                    border-gray-400 dark:border-gray-600
-                    dark:text-white bg-white dark:bg-black
-                  "
-                >
-                  {state ? (
-                    <span className="flex items-center gap-2"> {state}</span>
-                  ) : (
-                    "Select State"
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                align="start"
-                className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
-              >
-                <DropdownMenuItem
-                  onClick={() => Sstate("Delhi")}
-                  className="flex items-center w-full gap-2 cursor-pointer"
-                >
-                  Delhi
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={() => Sstate("Haryana")}
-                  className="flex items-center w-full gap-2 cursor-pointer"
-                >
-                  Haryana
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-md font-semibold dark:text-gray-200">
-              City
-            </Label>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="
-                    w-full justify-between 
-                    px-4 py-6 
-                    rounded-lg border
-                    border-gray-400 dark:border-gray-600
-                    dark:text-white bg-white dark:bg-black
-                  "
-                >
-                  {city ? city : "Select City"}
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                align="start"
-                className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
-              >
-                {/* Cities for Haryana */}
-                {state === "Haryana" && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => setCity("Gurgaon")}
-                      className="cursor-pointer"
-                    >
-                      Gurgaon
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => setCity("Noida")}
-                      className="cursor-pointer"
-                    >
-                      Noida
-                    </DropdownMenuItem>
-                  </>
-                )}
-
-                {/* Cities for Delhi */}
-                {state === "Delhi" && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => setCity("New Delhi")}
-                      className="cursor-pointer"
-                    >
-                      New Delhi
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => setCity("South Delhi")}
-                      className="cursor-pointer"
-                    >
-                      South Delhi
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => setCity("West Delhi")}
-                      className="cursor-pointer"
-                    >
-                      West Delhi
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => setCity("East Delhi")}
-                      className="cursor-pointer"
-                    >
-                      East Delhi
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        <div>
+          <SearchLoaction />
         </div>
       )}
       {sStep == 3 && (
-        <div className="space-y-4">
-          <Heading
-            title="Set Your Price"
-            description="Choose a price range that fits your space and attracts the right renters."
-          />
-          <div className="flex gap-2">
-            <input
-              type="number"
-              required
-              value={min}
-              onChange={(e) => setMin(e.target.value)}
-              placeholder="Min Value"
-              className="
-                w-full px-4 py-3 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-              "
-            />
-            <input
-              type="number"
-              required
-              value={max}
-              onChange={(e) => setMax(e.target.value)}
-              placeholder="Max Value"
-              className="
-                w-full px-4 py-3 rounded-lg border 
-                border-gray-400 dark:border-gray-600
-                dark:text-white bg-white dark:bg-black
-                focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white
-                transition
-              "
-            />
-          </div>
+        <div>
+          <Price />
         </div>
       )}
 
-      {sStep !== 0 && (
-        <div
-          className="
-      fixed bottom-0 left-0 right-0 
-      bg-white dark:bg-black 
-      border-t border-gray-300 dark:border-gray-700 
-      p-4 flex items-center justify-between
-    "
-        >
-          {/* Prev */}
-          <Button
-            size="lg"
-            onClick={() => setSstep(sStep - 1)}
-            disabled={sStep === 1}
-            className="rounded-xl py-6 cursor-pointer text-base"
-          >
-            Prev
-          </Button>
-
-          {/* Next / Finish with Shake Animation */}
-          <motion.div
-            animate={shake ? { x: [-10, 10, -10, 10, 0] } : { x: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            {sStep === 3 ? (
-              // ✅ FINISH BUTTON
-              <Button
-                disabled={loading}
-                size="lg"
-                onClick={handleFinish} // <-- your new function
-                className="rounded-xl py-6 cursor-pointer text-base"
-              >
-                Finish
-              </Button>
-            ) : (
-              // ✅ NEXT BUTTON
-              <Button
-                size="lg"
-                onClick={handleNext}
-                disabled={!isStepValid}
-                className={`rounded-xl py-6 cursor-pointer text-base 
-            ${!isStepValid ? "opacity-60 cursor-not-allowed" : ""}
-          `}
-              >
-                Next
-              </Button>
-            )}
-          </motion.div>
-        </div>
-      )}
+      <SearchFormNavigation
+        step={sStep}
+        isValid={isStepValid}
+        loading={loading}
+        shake={shake}
+        onPrev={prevStep}
+        onNext={handleNext}
+        onFinish={handleFinish}
+      />
     </div>
   );
 };

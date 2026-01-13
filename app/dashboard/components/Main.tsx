@@ -1,12 +1,8 @@
 import React from "react";
 import FormSetup from "./formsetup/FormSetup";
 
-const Main = () => {
-  return (
-    <div>
-      <FormSetup />
-    </div>
-  );
+const SearchBox = () => {
+  return <div></div>;
 };
 
-export default Main;
+export default SearchBox;

@@ -117,27 +117,24 @@ const AddCardList = () => {
             {/* CONTENT */}
             <div className="px-3 pb-3 pt-4 w-[350px] space-y-3">
               <div className="flex justify-between px-2">
-                <div className="flex items-center gap-2">
-                  <StoreIcon className="h-4 w-4 text-primary" />
-                  <h3 className="line-clamp-1 text-lg font-semibold ">
-                    {store.title}
-                  </h3>
+                <div className="flex items-center">
+                  <h3 className=" text-lg font-semibold ">{store.title}</h3>
                 </div>
-                <Link href={`/dashboard/edit/${store.id}`}>
+                {/* <Link href={`/dashboard/edit/${store.id}`}>
                   <Button>
                     <Edit className="w-5 h-5 rounded-full" />
                   </Button>
-                </Link>
+                </Link> */}
               </div>
 
-              <p className="text-sm text-neutral-500">{store.businessType}</p>
+              {/* <p className="text-sm text-neutral-500">{store.businessType}</p> */}
 
-              <div className="flex items-center gap-2 text-sm text-neutral-500">
+              {/* <div className="flex items-center gap-2 text-sm text-neutral-500">
                 <MapPin className="h-4 w-4" />
                 <span className="line-clamp-1">
                   {store.city}, {store.state}, {store.country}
                 </span>
-              </div>
+              </div> */}
 
               <div className="flex items-center justify-between pt-2 ">
                 <div className="flex items-center gap-1 text-base font-semibold ">

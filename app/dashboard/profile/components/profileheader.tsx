@@ -24,15 +24,6 @@ const ProfileHeader = () => {
           <p className="text-gray-500 text-sm">{session?.user?.email}</p>
         </div>
       </div>
-      <Tabs defaultValue="Store" className="h-">
-        <TabsList>
-          <TabsTrigger value="Store">Store</TabsTrigger>
-          <TabsTrigger value="Saved">Saved</TabsTrigger>
-        </TabsList>
-        <TabsContent value="Store">
-          <AddCardList />
-        </TabsContent>
-      </Tabs>
     </div>
   );
 };

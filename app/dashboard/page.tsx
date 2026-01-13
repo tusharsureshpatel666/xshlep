@@ -1,11 +1,13 @@
 "use client";
 
-import Main from "./components/Main";
+import FormSetup from "./components/formsetup/FormSetup";
+import SearchBox from "./components/Main";
 
 export default function Dashboard() {
   return (
     <div>
-      <Main />
+      <SearchBox />
+      <FormSetup />
     </div>
   );
 }

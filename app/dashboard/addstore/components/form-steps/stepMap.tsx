@@ -173,7 +173,7 @@ const LocationPicker = ({
       </div>
 
       {/* PIN */}
-      <div className="space-y-3">
+      <div className="space-y-3 w-full">
         <Label>PIN Code</Label>
         <input
           type="text"
