@@ -46,7 +46,6 @@ const TrueVideo = ({ videoUrl, setVideoUrl, setVideoFile }: TrueVideoProps) => {
             id="video-upload"
             type="file"
             accept="video/*"
-            capture="environment"
             hidden
             onChange={(e) => {
               if (e.target.files?.[0]) {
