@@ -28,6 +28,17 @@ export async function POST(req: Request) {
 
     const videoUrl = uploadedVideo.secure_url;
 
+    if (!videoUrl) {
+      return NextResponse.json(
+        {
+          error: "Video is Not Uploaded",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
     let lat: number | null = null;
     let lng: number | null = null;
 

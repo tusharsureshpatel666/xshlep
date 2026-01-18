@@ -23,6 +23,7 @@ import TrueVideo from "./form-steps/trueVideo";
 import PriceInput from "./form-steps/stepprice";
 import StepDesc from "./form-steps/StepDesc";
 import PeopleDesc from "./form-steps/PeopleDesc";
+import toast from "react-hot-toast";
 
 const AddFormStore = () => {
   const { sStep, setSStep, nextSStep, prevStep, resetStep } = useStoreStep();
@@ -161,9 +162,11 @@ const AddFormStore = () => {
       });
 
       console.log(res.data.store);
+      toast.success("Store Created");
       router.push(`/dashboard/store/${res.data.store.id}`);
     } catch (err) {
       console.error(err);
+      toast.error(err);
     }
     setLoading(false);
   };

@@ -1,1 +1,28 @@
 create the search StorePage
+
+      {/* <div className="grid grid-cols-3 grid-rows-2 gap-2 rounded-2xl overflow-hidden">
+        <div className="col-span-2 row-span-2 relative h-[420px]">
+          <Image
+            src={store?.bannerImageUrl || ""}
+            alt="Main"
+            fill
+            priority
+            className="object-cover"
+          />
+        </div>
+
+        {store?.images.map((img) => (
+          <div key={img.id} className="relative h-[205px]">
+            <Image src={img.url} alt="Store" fill className="object-cover" />
+          </div>
+        ))}
+      </div> */}
+
+      {/* ================= CONTENT GRID ================= */}
+      <div className=" gap-10">
+        {/* LEFT */}
+
+        {/* DESCRIPTION */}
+
+        {/* RIGHT – PRICE CARD */}
+      </div>
