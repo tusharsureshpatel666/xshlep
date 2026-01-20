@@ -24,7 +24,6 @@ import PriceInput from "./form-steps/stepprice";
 import StepDesc from "./form-steps/StepDesc";
 import PeopleDesc from "./form-steps/PeopleDesc";
 import toast from "react-hot-toast";
-import { uploadVideoToCloudinary } from "@/lib/uploadvideo";
 
 const AddFormStore = () => {
   const { sStep, setSStep, nextSStep, prevStep, resetStep } = useStoreStep();
@@ -118,15 +117,7 @@ const AddFormStore = () => {
   };
 
   const handleFinish = async () => {
-    if (loading) return;
     setLoading(true);
-
-    if (!videoFile) {
-      toast.error("Please upload a video");
-      setLoading(false);
-      return;
-    }
-
     const formData = new FormData();
 
     formData.append("title", title);
@@ -136,17 +127,10 @@ const AddFormStore = () => {
     formData.append("city", city);
     formData.append("pin", pin);
     formData.append("fullAddress", fullAdd);
-    formData.append("desc", desc);
-    formData.append("priceInr", price);
-    formData.append("businessType", bussinessType);
-    formData.append("peopleDesc", peopleDesc);
-
     if (bannerImage) formData.append("bannerImage", bannerImage);
-
     otherImages.forEach((img, index) => {
       if (img) formData.append(`image_${index}`, img);
     });
-
     formData.append(
       "share",
       JSON.stringify({
@@ -158,31 +142,33 @@ const AddFormStore = () => {
         dayOrNight: share.dayOrNight ?? null,
       }),
     );
-    const uploadedVideo = await uploadVideoToCloudinary(videoFile, (p) =>
-      console.log("Upload progress:", p),
-    );
-    formData.append("videoFile", uploadedVideo.secure_url);
+    if (videoFile) {
+      formData.append("videoFile", videoFile);
+    }
+
+    formData.append("desc", desc);
+
+    formData.append("priceInr", price);
+
+    formData.append("businessType", bussinessType);
+    formData.append("peopleDesc", peopleDesc);
+    console.log(share);
 
     try {
       const res = await axios.post("/api/store/create", formData, {
-        withCredentials: true,
-        timeout: 60000,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-      toast.success("Store Created 🎉");
+      console.log(res.data.store);
+      toast.success("Store Created");
       router.push(`/dashboard/store/${res.data.store.id}`);
-    } catch (err: any) {
-      console.error("CREATE_STORE_ERROR", err);
-
-      const message =
-        err?.response?.data?.error ||
-        err?.message ||
-        "Something went wrong while creating store";
-
-      toast.error(message);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      toast.error(err);
     }
+    setLoading(false);
   };
 
   return (
