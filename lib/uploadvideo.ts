@@ -1,25 +1,22 @@
 export async function uploadVideoToCloudinary(
   file: File,
   onProgress?: (p: number) => void,
-) {
-  // 1. Get signature
-  const sigRes = await fetch("/api/uploadvideo", {
-    method: "POST",
-  });
-
-  if (!sigRes.ok) throw new Error("Signature failed");
+): Promise<{ secure_url: string }> {
+  // 1️⃣ Get signature from backend
+  const sigRes = await fetch("/api/uploadvideo", { method: "POST" });
+  if (!sigRes.ok) throw new Error("Signature request failed");
   const sig = await sigRes.json();
 
-  // 2. Upload directly to Cloudinary
+  // 2️⃣ Prepare FormData for Cloudinary
   const formData = new FormData();
   formData.append("file", file);
   formData.append("api_key", sig.apiKey);
-  formData.append("timestamp", sig.timestamp);
+  formData.append("timestamp", sig.timestamp.toString());
   formData.append("signature", sig.signature);
-  formData.append("upload_preset", sig.uploadPreset);
-  formData.append("resource_type", "video");
+  formData.append("resource_type", "video"); // IMPORTANT
+  // Do not include upload_preset for signed uploads
 
-  return new Promise<{ secure_url: string }>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
     xhr.upload.onprogress = (e) => {
@@ -32,6 +29,7 @@ export async function uploadVideoToCloudinary(
       if (xhr.status === 200) {
         resolve(JSON.parse(xhr.responseText));
       } else {
+        console.error("Cloudinary upload error:", xhr.responseText);
         reject(new Error("Upload failed"));
       }
     };
