@@ -24,6 +24,7 @@ import PriceInput from "./form-steps/stepprice";
 import StepDesc from "./form-steps/StepDesc";
 import PeopleDesc from "./form-steps/PeopleDesc";
 import toast from "react-hot-toast";
+import { uploadVideoToCloudinary } from "@/lib/uploadvideo";
 
 const AddFormStore = () => {
   const { sStep, setSStep, nextSStep, prevStep, resetStep } = useStoreStep();
@@ -157,8 +158,10 @@ const AddFormStore = () => {
         dayOrNight: share.dayOrNight ?? null,
       }),
     );
-
-    formData.append("videoFile", videoFile);
+    const uploadedVideo = await uploadVideoToCloudinary(videoFile, (p) =>
+      console.log("Upload progress:", p),
+    );
+    formData.append("videoFile", uploadedVideo.secure_url);
 
     try {
       const res = await axios.post("/api/store/create", formData, {

@@ -8,7 +8,7 @@ cloudinary.config({
 
 export async function uploadToCloudinary(
   file: File,
-  resourceType: "image" | "video" = "image"
+  resourceType: "image" | "video" = "image",
 ) {
   if (!file) {
     throw new Error("File is null or undefined");
@@ -25,7 +25,7 @@ export async function uploadToCloudinary(
       (error, result) => {
         if (error) reject(error);
         else resolve(result);
-      }
+      },
     );
 
     uploadStream.end(buffer);

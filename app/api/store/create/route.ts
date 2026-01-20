@@ -46,6 +46,7 @@ export async function POST(req: Request) {
     const businessType = String(formData.get("businessType"));
     const peopleDesc = String(formData.get("peopleDesc") || "");
     const storeSize = String(formData.get("storeSize") || "");
+    const VideoUrl = String(formData.get("videoFile") || "");
 
     // ===== SHARE PARSE =====
     let share;
@@ -59,25 +60,6 @@ export async function POST(req: Request) {
     }
 
     // ===== VIDEO UPLOAD =====
-    const videoFile = formData.get("videoFile");
-    if (!(videoFile instanceof File)) {
-      return NextResponse.json(
-        { error: "Video file is required" },
-        { status: 400 },
-      );
-    }
-
-    let videoUrl: string;
-    try {
-      const uploadedVideo = await uploadToCloudinary(videoFile, "video");
-      videoUrl = uploadedVideo.secure_url;
-    } catch (err) {
-      console.error("VIDEO_UPLOAD_FAILED", err);
-      return NextResponse.json(
-        { error: "Video upload failed" },
-        { status: 500 },
-      );
-    }
 
     // ===== GEOLOCATION =====
     let lat: number | null = null;
@@ -142,7 +124,7 @@ export async function POST(req: Request) {
         businessType,
         latitude: lat,
         longitude: lng,
-        videoUrl,
+        videoUrl: VideoUrl,
         peopleDesc,
         storeSize,
         bannerImageUrl: bannerUrl,
