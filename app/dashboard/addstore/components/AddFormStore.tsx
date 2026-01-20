@@ -162,6 +162,7 @@ const AddFormStore = () => {
 
     try {
       const res = await axios.post("/api/store/create", formData, {
+        withCredentials: true,
         timeout: 60000,
       });
 
