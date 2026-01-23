@@ -60,6 +60,19 @@ const AddFormStore = () => {
   const [shake, setShake] = useState(false);
   const { share, setMode, updateShare } = useParticStore();
   const { mode } = share;
+  const STEP_MAP = {
+    TITLE: 1,
+    STORE_TYPE: 2,
+    LOCATION: 3,
+    IMAGES: 4,
+    SHARE: 5,
+    SHARE_DETAILS: 6,
+    VIDEO: 7,
+    PRICE: 8,
+    BUSINESS: 9,
+    DESCRIPTION: 10,
+    PEOPLE_DESC: 11,
+  };
 
   const isStepValid =
     // Step 1: title
@@ -156,19 +169,25 @@ const AddFormStore = () => {
 
     try {
       const res = await axios.post("/api/store/create", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log(res.data.store);
-      toast.success("Store Created");
+      toast.success("Store Created 🎉");
       router.push(`/dashboard/store/${res.data.store.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error(err);
+
+      const stepKey = err?.response?.data?.step;
+      const message = err?.response?.data?.error || "Something went wrong";
+
+      toast.error(message);
+
+      if (stepKey && STEP_MAP[stepKey]) {
+        setSStep(STEP_MAP[stepKey]);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

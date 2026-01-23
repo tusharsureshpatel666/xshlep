@@ -1,14 +1,27 @@
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { NextResponse } from "next/server";
-import { auth } from "../../../../lib/auth";
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import type { UploadApiResponse } from "cloudinary";
 
 export async function POST(req: Request) {
   try {
-    const formData = await req.formData(); //  <-- YOU FORGOT await
-
+    /* ----------------------------- */
+    /* 1. Auth */
+    /* ----------------------------- */
     const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized", step: "TITLE" },
+        { status: 401 },
+      );
+    }
+
+    const ownerId = session.user.id;
+
+    /* ----------------------------- */
+    /* 2. Form Data */
+    /* ----------------------------- */
+    const formData = await req.formData();
 
     const title = formData.get("title") as string;
     const desc = formData.get("desc") as string;
@@ -17,90 +30,141 @@ export async function POST(req: Request) {
     const city = formData.get("city") as string;
     const pin = formData.get("pin") as string;
     const fullAddress = formData.get("fullAddress") as string;
-    const priceInr = Number(formData.get("priceInr"));
+    const businessType = formData.get("businessType") as string;
     const peopleDesc = formData.get("peopleDesc") as string;
     const storeSize = formData.get("storeSize") as string;
-
-    const businessType = formData.get("businessType") as string;
+    const priceInr = Number(formData.get("priceInr"));
     const videoFile = formData.get("videoFile") as File;
 
-    const uploadedVideo = await uploadToCloudinary(videoFile, "video");
-
-    const videoUrl = uploadedVideo.secure_url;
-
-    if (!videoUrl) {
+    /* ----------------------------- */
+    /* 3. Validation (FAIL FAST) */
+    /* ----------------------------- */
+    if (!title) {
       return NextResponse.json(
-        {
-          error: "Video is Not Uploaded",
-        },
-        {
-          status: 401,
-        },
+        { error: "Title is required", step: "TITLE" },
+        { status: 400 },
       );
     }
 
-    let lat: number | null = null;
-    let lng: number | null = null;
-
-    const addressString = `${fullAddress}, ${city}, ${state}, ${country}, ${pin}`;
-
-    const geocodeApiKey = process.env.GOOGLE_MAPS_API_KEY;
-    const geocodeRes = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-        addressString,
-      )}&key=${geocodeApiKey}`,
-    );
-    const geocodeData = await geocodeRes.json();
-
-    if (geocodeData.status === "OK" && geocodeData.results.length > 0) {
-      lat = geocodeData.results[0].geometry.location.lat;
-      lng = geocodeData.results[0].geometry.location.lng;
+    if (!country || !state || !city || !pin || !fullAddress) {
+      return NextResponse.json(
+        { error: "Invalid location", step: "LOCATION" },
+        { status: 400 },
+      );
     }
 
-    const ownerId = session?.user?.id;
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!videoFile) {
+      return NextResponse.json(
+        { error: "Video is required", step: "VIDEO" },
+        { status: 400 },
+      );
     }
 
-    const bannerImage = formData.get("bannerImage");
-
-    let bannerUrl: string | null = null;
-
-    if (bannerImage instanceof File && bannerImage.size > 0) {
-      const uploaded = await uploadToCloudinary(bannerImage, "image");
-      bannerUrl = uploaded.secure_url;
+    if (!desc) {
+      return NextResponse.json(
+        { error: "Description required", step: "DESCRIPTION" },
+        { status: 400 },
+      );
     }
 
-    const otherImages: File[] = [];
-    for (let i = 0; i < 4; i++) {
-      const img = formData.get(`image_${i}`);
-      if (img instanceof File) otherImages.push(img);
-    }
-    // let bannerUrl: string | null = null;
-
-    // if (bannerImage) {
-    //   const uploaded: UploadApiResponse = await uploadToCloudinary(bannerImage);
-    //   bannerUrl = uploaded.secure_url;
-    // }
-
-    const imageUrls: string[] = [];
-
-    for (let i = 0; i < 4; i++) {
-      const img = formData.get(`image_${i}`);
-
-      if (img instanceof File && img.size > 0) {
-        const uploaded = await uploadToCloudinary(img, "image");
-        imageUrls.push(uploaded.secure_url);
-      }
+    if (Number.isNaN(priceInr)) {
+      return NextResponse.json(
+        { error: "Invalid price", step: "PRICE" },
+        { status: 400 },
+      );
     }
 
     const shareRaw = formData.get("share") as string;
-    console.log(shareRaw);
-    if (!shareRaw) throw new Error("Share data missing");
+    if (!shareRaw) {
+      return NextResponse.json(
+        { error: "Share data missing", step: "SHARE" },
+        { status: 400 },
+      );
+    }
 
-    const share = JSON.parse(shareRaw);
-    const shareMode = share.mode;
+    let share;
+    try {
+      share = JSON.parse(shareRaw);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid share data", step: "SHARE" },
+        { status: 400 },
+      );
+    }
 
+    /* ----------------------------- */
+    /* 4. Collect Media */
+    /* ----------------------------- */
+    const bannerImage = formData.get("bannerImage");
+
+    const imageFiles: File[] = [];
+    for (let i = 0; i < 4; i++) {
+      const img = formData.get(`image_${i}`);
+      if (img instanceof File && img.size > 0) {
+        imageFiles.push(img);
+      }
+    }
+
+    if (imageFiles.length < 4 || !bannerImage) {
+      return NextResponse.json(
+        { error: "Images missing", step: "IMAGES" },
+        { status: 400 },
+      );
+    }
+
+    /* ----------------------------- */
+    /* 5. Upload Media (PARALLEL ⚡) */
+    /* ----------------------------- */
+    let uploads;
+    try {
+      uploads = await Promise.all([
+        uploadToCloudinary(videoFile, "video"),
+        uploadToCloudinary(bannerImage as File, "image"),
+        ...imageFiles.map((f) => uploadToCloudinary(f, "image")),
+      ]);
+    } catch {
+      return NextResponse.json(
+        { error: "Media upload failed", step: "IMAGES" },
+        { status: 500 },
+      );
+    }
+
+    const [videoUpload, bannerUpload, ...imageUploads] = uploads;
+
+    if (!videoUpload?.secure_url) {
+      return NextResponse.json(
+        { error: "Video upload failed", step: "VIDEO" },
+        { status: 500 },
+      );
+    }
+
+    /* ----------------------------- */
+    /* 6. Google Geocoding (SOFT FAIL) */
+    /* ----------------------------- */
+    let lat: number | null = null;
+    let lng: number | null = null;
+
+    try {
+      const address = `${fullAddress}, ${city}, ${state}, ${country}, ${pin}`;
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          address,
+        )}&key=${process.env.GOOGLE_MAPS_API_KEY}`,
+      );
+
+      const data = await res.json();
+      if (data.status === "OK") {
+        lat = data.results[0].geometry.location.lat;
+        lng = data.results[0].geometry.location.lng;
+      }
+    } catch {
+      // intentionally NOT failing the request
+      console.warn("Geocoding failed");
+    }
+
+    /* ----------------------------- */
+    /* 7. Create Store */
+    /* ----------------------------- */
     const store = await prisma.store.create({
       data: {
         ownerId,
@@ -115,43 +179,38 @@ export async function POST(req: Request) {
         businessType,
         latitude: lat,
         longitude: lng,
-        videoUrl,
+        videoUrl: videoUpload.secure_url,
         peopleDesc,
-        storeSize: storeSize,
-        bannerImageUrl: bannerUrl,
-        shareMode,
+        storeSize,
+        bannerImageUrl: bannerUpload.secure_url,
+        shareMode: share.mode,
         startTime: share.startTime,
         endTime: share.endTime,
         days: share.days ?? [],
         sqft: share.sqft,
         dayOrNight: share.dayOrNight,
-
         images: {
-          create: imageUrls.map((url, index) => ({
-            url,
-            order: index,
+          create: imageUploads.map((u, i) => ({
+            url: u.secure_url,
+            order: i,
           })),
         },
       },
-      include: {
-        images: true, // 👈 THIS
-      },
+      include: { images: true },
     });
 
+    /* ----------------------------- */
+    /* 8. Success */
+    /* ----------------------------- */
     return NextResponse.json(
-      {
-        message: "Form received successfully",
-        store,
-      },
-      { status: 200 },
+      { message: "Store created successfully", store },
+      { status: 201 },
     );
   } catch (error) {
-    console.log("Error creating store:", error);
+    console.error("Create store error:", error);
 
     return NextResponse.json(
-      {
-        error: "Something went wrong",
-      },
+      { error: "Internal server error", step: "TITLE" },
       { status: 500 },
     );
   }

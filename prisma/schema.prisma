@@ -89,6 +89,7 @@ model StoreImage {
   url       String
   order     Int      @default(0) // order index (0..4)
   createdAt DateTime @default(now())
+  
 }
 
 model StoreLike {
