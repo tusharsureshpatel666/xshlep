@@ -185,6 +185,12 @@ const AddFormStore = () => {
       if (stepKey && STEP_MAP[stepKey]) {
         setSStep(STEP_MAP[stepKey]);
       }
+
+      if (typeof window !== "undefined") {
+        window.onerror = function (msg, src, line, col, err) {
+          alert("Client error: " + msg);
+        };
+      }
     } finally {
       setLoading(false);
     }
