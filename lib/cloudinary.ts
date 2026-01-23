@@ -18,13 +18,27 @@ export async function uploadToCloudinary(
   const buffer = Buffer.from(bytes);
 
   return new Promise<any>((resolve, reject) => {
+    const options: any = {
+      resource_type: resourceType,
+    };
+
+    // 🔥 CRITICAL FIX FOR MOBILE VIDEOS (.mov / HEVC)
+    if (resourceType === "video") {
+      options.format = "mp4"; // force mp4
+      options.video_codec = "h264"; // force h264
+      options.quality = "auto"; // reduce size
+      options.eager_async = true; // async processing (faster response)
+    }
+
     const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        resource_type: resourceType,
-      },
+      options,
       (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
+        if (error) {
+          console.error("Cloudinary upload error:", error);
+          reject(error);
+        } else {
+          resolve(result);
+        }
       },
     );
 
