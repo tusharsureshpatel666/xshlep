@@ -117,7 +117,6 @@ const AddFormStore = () => {
     (sStep === 9 && bussinessType !== "") ||
     (sStep === 10 && desc !== "") ||
     (sStep === 11 && peopleDesc !== "") ||
-    // Step 7+
     sStep > 12;
 
   const handleNext = () => {
