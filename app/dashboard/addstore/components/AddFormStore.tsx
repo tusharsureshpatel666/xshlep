@@ -128,9 +128,31 @@ const AddFormStore = () => {
     }
     nextSStep();
   };
+  const mediaUpload = async () => {
+    try {
+      const formData = new FormData();
+
+      if (bannerImage) formData.append("bannerImage", bannerImage);
+      if (videoFile) formData.append("videoFile", videoFile);
+
+      const res = await axios.post("/api/upload/images", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return res.data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleFinish = async () => {
     setLoading(true);
+
+    const { bannerUrl, videoUrl } = await mediaUpload();
+    console.log(bannerUrl, videoUrl);
+
     const formData = new FormData();
 
     formData.append("title", title);
@@ -140,7 +162,7 @@ const AddFormStore = () => {
     formData.append("city", city);
     formData.append("pin", pin);
     formData.append("fullAddress", fullAdd);
-    if (bannerImage) formData.append("bannerImage", bannerImage);
+    if (bannerImage) formData.append("bannerImage", bannerUrl);
     otherImages.forEach((img, index) => {
       if (img) formData.append(`image_${index}`, img);
     });
@@ -156,7 +178,7 @@ const AddFormStore = () => {
       }),
     );
     if (videoFile) {
-      formData.append("videoFile", videoFile);
+      formData.append("videoFile", videoUrl);
     }
 
     formData.append("desc", desc);

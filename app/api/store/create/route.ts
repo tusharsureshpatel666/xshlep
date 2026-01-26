@@ -34,7 +34,8 @@ export async function POST(req: Request) {
     const peopleDesc = formData.get("peopleDesc") as string;
     const storeSize = formData.get("storeSize") as string;
     const priceInr = Number(formData.get("priceInr"));
-    const videoFile = formData.get("videoFile") as File;
+    const videoFile = formData.get("videoFile") as string;
+    const bannerImage = formData.get("bannerImage") as string;
 
     /* ----------------------------- */
     /* 3. Validation (FAIL FAST) */
@@ -95,7 +96,6 @@ export async function POST(req: Request) {
     /* ----------------------------- */
     /* 4. Collect Media */
     /* ----------------------------- */
-    const bannerImage = formData.get("bannerImage");
 
     const imageFiles: File[] = [];
     for (let i = 0; i < 4; i++) {
@@ -118,8 +118,6 @@ export async function POST(req: Request) {
     let uploads;
     try {
       uploads = await Promise.all([
-        uploadToCloudinary(videoFile, "video"),
-        uploadToCloudinary(bannerImage as File, "image"),
         ...imageFiles.map((f) => uploadToCloudinary(f, "image")),
       ]);
     } catch {
@@ -129,14 +127,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const [videoUpload, bannerUpload, ...imageUploads] = uploads;
-
-    if (!videoUpload?.secure_url) {
-      return NextResponse.json(
-        { error: "Video upload failed", step: "VIDEO" },
-        { status: 500 },
-      );
-    }
+    const [...imageUploads] = uploads;
 
     /* ----------------------------- */
     /* 6. Google Geocoding (SOFT FAIL) */
@@ -179,10 +170,10 @@ export async function POST(req: Request) {
         businessType,
         latitude: lat,
         longitude: lng,
-        videoUrl: videoUpload.secure_url,
+        videoUrl: videoFile,
         peopleDesc,
         storeSize,
-        bannerImageUrl: bannerUpload.secure_url,
+        bannerImageUrl: bannerImage,
         shareMode: share.mode,
         startTime: share.startTime,
         endTime: share.endTime,

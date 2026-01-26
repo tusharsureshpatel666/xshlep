@@ -11,7 +11,16 @@ const StepIntro = () => {
     <div className="flex flex-col gap-8 animate-fadeIn">
       {/* Illustration */}
       <div className="flex justify-center w-full flex-col text-center items-center gap-5">
-        <Image src={"/sure.svg"} width={500} height={500} alt="hello" />
+        <div className="relative w-full max-w-md mx-auto aspect-square">
+          <Image
+            src="/starter.svg"
+            alt="hello"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+
         {/* Heading */}
         <Heading
           title="List Your Store for Rent"

@@ -51,11 +51,11 @@ const StepTypeStore = ({ value, onChange }: Props) => {
               key={item.id}
               onClick={() => onChange(item.title)}
               className={clsx(
-                "cursor-pointer rounded-xl border p-4 transition",
-                "hover:border-black dark:hover:border-white",
+                "cursor-pointer rounded-xl border-2 p-4 transition-colors",
+                "hover:border-[var(--primary)] hover:bg-[color:var(--primary)/0.08]",
                 selected
-                  ? "border-black dark:border-white bg-gray-50 dark:bg-zinc-900"
-                  : "border-gray-300 dark:border-gray-700"
+                  ? "border-[var(--primary)] bg-[color:var(--primary)/0.12]"
+                  : "border-gray-300 dark:border-gray-700",
               )}
             >
               <div className="flex items-center gap-4">

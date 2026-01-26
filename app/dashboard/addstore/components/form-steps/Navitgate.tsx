@@ -34,7 +34,7 @@ const FormNavigation = ({
       {/* 🔴 Progress Line */}
       <div className="h-1 w-full bg-gray-200 dark:bg-gray-800">
         <motion.div
-          className="h-full bg-red-500"
+          className="h-full bg-[#0064ff]"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.4, ease: "easeOut" }}

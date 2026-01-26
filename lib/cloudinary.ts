@@ -17,7 +17,7 @@ export async function uploadToCloudinary(
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  return new Promise<any>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const options: any = {
       resource_type: resourceType,
     };

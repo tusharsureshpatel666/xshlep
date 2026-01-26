@@ -1,7 +1,7 @@
 "use client";
 
 import Heading from "@/app/dashboard/components/heading";
-import { Video } from "lucide-react";
+import { Video, Loader2, CloudUpload } from "lucide-react";
 import { useState } from "react";
 
 interface TrueVideoProps {
@@ -16,31 +16,44 @@ const TrueVideo = ({ videoUrl, setVideoUrl, setVideoFile }: TrueVideoProps) => {
   const handleUpload = (file: File) => {
     setUploading(true);
 
-    // ✅ store real file (for backend upload)
-    setVideoFile(file);
-
-    // ✅ store preview URL (ONLY for UI)
-    const localUrl = URL.createObjectURL(file);
-    setVideoUrl(localUrl);
+    setVideoFile(file); // backend
+    setVideoUrl(URL.createObjectURL(file)); // UI preview
 
     setUploading(false);
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Heading
         title="Show Us Your Store"
-        description="Record a short video of your store using your camera."
+        description="Record a short video of your store (30–60 seconds works best)."
       />
 
+      {/* Upload Box */}
       {!videoUrl && (
         <label
           htmlFor="video-upload"
-          className="flex h-[400px] flex-col items-center justify-center gap-3
-                     rounded-xl border-2 border-dashed cursor-pointer"
+          className="
+            group flex h-[500px] flex-col items-center justify-center gap-4
+            rounded-xl border-2 border-dashed
+            border-gray-300 dark:border-gray-700
+            cursor-pointer transition
+            hover:border-[var(--primary)]
+            hover:bg-[color:var(--primary)/0.04]
+          "
         >
-          <Video className="h-10 w-10" />
-          <p>{uploading ? "Processing..." : "Click to record video"}</p>
+          {uploading ? (
+            <Loader2 className="h-10 w-10 animate-spin text-[var(--primary)]" />
+          ) : (
+            <CloudUpload className="h-10 w-10 text-gray-400 group-hover:text-[var(--primary)]" />
+          )}
+
+          <div className="text-center space-y-1">
+            <p className="font-medium">
+              {uploading ? "Processing video..." : "Click to record or upload"}
+            </p>
+            <p className="text-sm text-gray-500">MP4 / MOV • Max 60 sec</p>
+          </div>
 
           <input
             id="video-upload"
@@ -56,16 +69,29 @@ const TrueVideo = ({ videoUrl, setVideoUrl, setVideoFile }: TrueVideoProps) => {
         </label>
       )}
 
+      {/* Preview */}
       {videoUrl && (
-        <div className="space-y-3">
-          <video
-            src={videoUrl}
-            controls
-            className="w-full max-w-2xl mx-auto rounded-lg"
-          />
+        <div className="space-y-4">
+          <div className="rounded-xl border bg-black/90 p-2">
+            <video
+              src={videoUrl}
+              controls
+              className="
+                w-full
+                max-h-[500px]
+                rounded-lg
+                object-contain
+              "
+            />
+          </div>
 
           <button
-            className="underline text-center w-full"
+            type="button"
+            className="
+              mx-auto block text-sm font-medium
+              text-gray-600 hover:text-[var(--primary)]
+              underline underline-offset-4
+            "
             onClick={() => {
               setVideoUrl(null);
               setVideoFile(null);

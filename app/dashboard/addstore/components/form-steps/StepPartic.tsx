@@ -17,7 +17,7 @@ const StepPartic = () => {
         description="Decide how you want to share your store and make it accessible to your audience."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
         {PARTIC_OPTIONS.map((item) => {
           const isActive = mode === item.value;
 
@@ -27,8 +27,8 @@ const StepPartic = () => {
               onClick={() => setMode(item.value)}
               className={`p-5 border rounded-xl text-left transition-all ${
                 isActive
-                  ? "border-red-500 "
-                  : "border-gray-300 hover:border-red-400 cursor-pointer"
+                  ? "border-blue-500 "
+                  : "border-gray-300 hover:border-blue-400 cursor-pointer"
               }`}
             >
               <div className="flex items-center gap-4">
